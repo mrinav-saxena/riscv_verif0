@@ -1,0 +1,11 @@
+=== STDOUT ===
+ELF: sim\images\linked_list\program.elf
+BIN: sim\images\linked_list\program.bin
+IMEM HEX: sim\images\linked_list\imem.hex
+DMEM HEX: sim\images\linked_list\dmem.hex
+ASM: sim\images\linked_list\program.s
+DISASM: sim\images\linked_list\program.disasm
+
+=== STDERR ===
+
+=== RETURN CODE: 0 ===

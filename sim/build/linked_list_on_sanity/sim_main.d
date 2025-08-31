@@ -1,0 +1,10 @@
+sim_main.o: \
+ C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity/sim_main.cpp \
+ C:/msys64/mingw64/share/verilator/include/verilated.h \
+ C:/msys64/mingw64/share/verilator/include/verilatedos.h \
+ C:/msys64/mingw64/share/verilator/include/verilated_config.h \
+ C:/msys64/mingw64/share/verilator/include/verilated_types.h \
+ C:/msys64/mingw64/share/verilator/include/verilated_funcs.h \
+ C:/msys64/mingw64/share/verilator/include/verilated_fst_c.h \
+ C:/msys64/mingw64/share/verilator/include/verilated.h \
+ C:/msys64/mingw64/share/verilator/include/verilated_trace.h Vtb.h

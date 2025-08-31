@@ -1,0 +1,64 @@
+=== STDOUT ===
+- V e r i l a t i o n   R e p o r t: Verilator 5.036 2025-04-27 rev UNKNOWN.REV
+- Verilator: Built from 0.149 MB sources in 8 modules, into 0.295 MB in 12 C++ files needing 0.000 MB
+- Verilator: Walltime 0.079 s (elab=0.010, cvt=0.031, bld=0.000); cpu 0.000 s on 1 threads; alloced 15.891 MB
+
+=== STDERR ===
+%Warning-WIDTHTRUNC: rtl/core/single_cycle\single_cycle_core.sv:62:6: Input port connection 'addr' expects 10 bits on the pin connection, but pin connection's SEL generates 30 bits.
+                                                                    : ... note: In instance 'tb.dut'
+   62 |     .addr   (pc[31:2]),
+      |      ^~~~
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.036
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-WIDTHEXPAND: rtl/core/single_cycle\single_cycle_core.sv:170:30: Operator SHIFTL expects 4 bits on the LHS, but LHS's CONST '1'h1' generates 1 bits.
+                                                                       : ... note: In instance 'tb.dut'
+  170 |     (opcode_e == SB) ? (1'b1 << alu_result[1:0]) :
+      |                              ^~
+                      ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=5.036
+                      ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
+%Warning-WIDTHEXPAND: rtl/core/single_cycle\single_cycle_core.sv:171:31: Operator SHIFTL expects 4 bits on the LHS, but LHS's CONST '2'h3' generates 2 bits.
+                                                                       : ... note: In instance 'tb.dut'
+  171 |     (opcode_e == SH) ? (2'b11 << (alu_result[1]+1)) : 
+      |                               ^~
+%Warning-UNUSEDSIGNAL: C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv:6:7: Signal is not used: 'deadbeef_written'
+                                                                                                 : ... note: In instance 'tb'
+    6 |   bit deadbeef_written = 0;
+      |       ^~~~~~~~~~~~~~~~
+                       ... For warning description see https://verilator.org/warn/UNUSEDSIGNAL?v=5.036
+                       ... Use "/* verilator lint_off UNUSEDSIGNAL */" and lint_on around source to disable this message.
+%Warning-UNUSEDPARAM: rtl/core/single_cycle\single_cycle_core.sv:6:17: Parameter is not used: 'ADDR_WIDTH'
+                                                                     : ... note: In instance 'tb.dut'
+    6 |   parameter int ADDR_WIDTH = 32,
+      |                 ^~~~~~~~~~
+                      ... For warning description see https://verilator.org/warn/UNUSEDPARAM?v=5.036
+                      ... Use "/* verilator lint_off UNUSEDPARAM */" and lint_on around source to disable this message.
+%Warning-UNUSEDSIGNAL: rtl/core/single_cycle\regfile.sv:12:38: Signal is not used: 'wstrb'
+                                                             : ... note: In instance 'tb.dut.rf_main'
+   12 |     input logic [DATA_WIDTH/8 - 1:0] wstrb,
+      |                                      ^~~~~
+%Warning-BLKSEQ: C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv:44:24: Blocking assignment '=' in sequential logic process
+                                                                                             : ... Suggest using delayed assignment '<='
+   44 |       deadbeef_written = 1;
+      |                        ^
+                 ... For warning description see https://verilator.org/warn/BLKSEQ?v=5.036
+                 ... Use "/* verilator lint_off BLKSEQ */" and lint_on around source to disable this message.
+%Warning-SYNCASYNCNET: C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv:3:15: Signal flopped as both synchronous and async: 'rst_n'
+                       rtl/core/single_cycle\single_cycle_core.sv:27:10: ... Location of async usage
+   27 |     if (!rst_n) begin
+      |          ^~~~~
+                       rtl/mem/zerolat\mem_zerolat.sv:25:10: ... Location of sync usage
+   25 |     if (!rst_n) begin
+      |          ^~~~~
+                       ... For warning description see https://verilator.org/warn/SYNCASYNCNET?v=5.036
+                       ... Use "/* verilator lint_off SYNCASYNCNET */" and lint_on around source to disable this message.
+%Warning-MULTIDRIVEN: rtl/core/single_cycle\regfile.sv:17:28: Signal has multiple driving blocks with different clocking: 'tb.dut.rf_main.regs'
+                      rtl/core/single_cycle\regfile.sv:35:17: ... Location of first driving block
+   35 |                 regs[rd] <= wdata ;
+      |                 ^~~~
+                      rtl/core/single_cycle\regfile.sv:25:21: ... Location of other driving block
+   25 |                     regs[i_reg] <= 32'h0;
+      |                     ^~~~
+                      ... For warning description see https://verilator.org/warn/MULTIDRIVEN?v=5.036
+                      ... Use "/* verilator lint_off MULTIDRIVEN */" and lint_on around source to disable this message.
+
+=== RETURN CODE: 0 ===

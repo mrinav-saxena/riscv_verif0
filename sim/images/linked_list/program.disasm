@@ -1,0 +1,137 @@
+
+sim\images\linked_list\program.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <get_free_node>:
+   0:	fe010113          	addi	sp,sp,-32
+   4:	00112e23          	sw	ra,28(sp)
+   8:	00812c23          	sw	s0,24(sp)
+   c:	02010413          	addi	s0,sp,32
+  10:	fe042623          	sw	zero,-20(s0)
+  14:	0540006f          	jal	zero,68 <get_free_node+0x68>
+  18:	100007b7          	lui	a5,0x10000
+  1c:	03478713          	addi	a4,a5,52 # 10000034 <all_available_nodes>
+  20:	fec42783          	lw	a5,-20(s0)
+  24:	00279793          	slli	a5,a5,0x2
+  28:	00f707b3          	add	a5,a4,a5
+  2c:	0007c783          	lbu	a5,0(a5)
+  30:	02079663          	bne	a5,zero,5c <get_free_node+0x5c>
+  34:	100007b7          	lui	a5,0x10000
+  38:	03478713          	addi	a4,a5,52 # 10000034 <all_available_nodes>
+  3c:	fec42783          	lw	a5,-20(s0)
+  40:	00279793          	slli	a5,a5,0x2
+  44:	00f707b3          	add	a5,a4,a5
+  48:	00100713          	addi	a4,zero,1
+  4c:	00e78023          	sb	a4,0(a5)
+  50:	fec42783          	lw	a5,-20(s0)
+  54:	0ff7f793          	andi	a5,a5,255
+  58:	0200006f          	jal	zero,78 <get_free_node+0x78>
+  5c:	fec42783          	lw	a5,-20(s0)
+  60:	00178793          	addi	a5,a5,1
+  64:	fef42623          	sw	a5,-20(s0)
+  68:	fec42703          	lw	a4,-20(s0)
+  6c:	03f00793          	addi	a5,zero,63
+  70:	fae7d4e3          	bge	a5,a4,18 <get_free_node+0x18>
+  74:	0ff00793          	addi	a5,zero,255
+  78:	00078513          	addi	a0,a5,0
+  7c:	01c12083          	lw	ra,28(sp)
+  80:	01812403          	lw	s0,24(sp)
+  84:	02010113          	addi	sp,sp,32
+  88:	00008067          	jalr	zero,0(ra)
+
+0000008c <add_ll_node>:
+  8c:	fd010113          	addi	sp,sp,-48
+  90:	02112623          	sw	ra,44(sp)
+  94:	02812423          	sw	s0,40(sp)
+  98:	03010413          	addi	s0,sp,48
+  9c:	00050793          	addi	a5,a0,0
+  a0:	00058713          	addi	a4,a1,0
+  a4:	fcf40fa3          	sb	a5,-33(s0)
+  a8:	00070793          	addi	a5,a4,0
+  ac:	fcf41e23          	sh	a5,-36(s0)
+  b0:	fe042423          	sw	zero,-24(s0)
+  b4:	fdf44783          	lbu	a5,-33(s0)
+  b8:	fef407a3          	sb	a5,-17(s0)
+  bc:	00000097          	auipc	ra,0x0
+  c0:	f44080e7          	jalr	ra,-188(ra) # 0 <get_free_node>
+  c4:	00050793          	addi	a5,a0,0
+  c8:	fef403a3          	sb	a5,-25(s0)
+  cc:	0640006f          	jal	zero,130 <add_ll_node+0xa4>
+  d0:	fef44783          	lbu	a5,-17(s0)
+  d4:	02078263          	beq	a5,zero,f8 <add_ll_node+0x6c>
+  d8:	fef44783          	lbu	a5,-17(s0)
+  dc:	10000737          	lui	a4,0x10000
+  e0:	03470713          	addi	a4,a4,52 # 10000034 <all_available_nodes>
+  e4:	00279793          	slli	a5,a5,0x2
+  e8:	00f707b3          	add	a5,a4,a5
+  ec:	0017c783          	lbu	a5,1(a5)
+  f0:	fef407a3          	sb	a5,-17(s0)
+  f4:	03c0006f          	jal	zero,130 <add_ll_node+0xa4>
+  f8:	fef44783          	lbu	a5,-17(s0)
+  fc:	10000737          	lui	a4,0x10000
+ 100:	03470713          	addi	a4,a4,52 # 10000034 <all_available_nodes>
+ 104:	00279793          	slli	a5,a5,0x2
+ 108:	00f707b3          	add	a5,a4,a5
+ 10c:	fe744703          	lbu	a4,-25(s0)
+ 110:	00e780a3          	sb	a4,1(a5)
+ 114:	fe744783          	lbu	a5,-25(s0)
+ 118:	10000737          	lui	a4,0x10000
+ 11c:	03470713          	addi	a4,a4,52 # 10000034 <all_available_nodes>
+ 120:	00279793          	slli	a5,a5,0x2
+ 124:	00f707b3          	add	a5,a4,a5
+ 128:	fdc45703          	lhu	a4,-36(s0)
+ 12c:	00e79123          	sh	a4,2(a5)
+ 130:	fe842783          	lw	a5,-24(s0)
+ 134:	f8078ee3          	beq	a5,zero,d0 <add_ll_node+0x44>
+ 138:	00000013          	addi	zero,zero,0
+ 13c:	00000013          	addi	zero,zero,0
+ 140:	02c12083          	lw	ra,44(sp)
+ 144:	02812403          	lw	s0,40(sp)
+ 148:	03010113          	addi	sp,sp,48
+ 14c:	00008067          	jalr	zero,0(ra)
+
+00000150 <main>:
+ 150:	fe010113          	addi	sp,sp,-32
+ 154:	00112e23          	sw	ra,28(sp)
+ 158:	00812c23          	sw	s0,24(sp)
+ 15c:	02010413          	addi	s0,sp,32
+ 160:	fe042623          	sw	zero,-20(s0)
+ 164:	0600006f          	jal	zero,1c4 <main+0x74>
+ 168:	100007b7          	lui	a5,0x10000
+ 16c:	02078713          	addi	a4,a5,32 # 10000020 <random_sequence>
+ 170:	fec42783          	lw	a5,-20(s0)
+ 174:	00f707b3          	add	a5,a4,a5
+ 178:	0007c783          	lbu	a5,0(a5)
+ 17c:	00078713          	addi	a4,a5,0
+ 180:	100007b7          	lui	a5,0x10000
+ 184:	03078793          	addi	a5,a5,48 # 10000030 <init_ll_head_ptr>
+ 188:	00f707b3          	add	a5,a4,a5
+ 18c:	0007c683          	lbu	a3,0(a5)
+ 190:	100007b7          	lui	a5,0x10000
+ 194:	00078713          	addi	a4,a5,0 # 10000000 <base_data>
+ 198:	fec42783          	lw	a5,-20(s0)
+ 19c:	00179793          	slli	a5,a5,0x1
+ 1a0:	00f707b3          	add	a5,a4,a5
+ 1a4:	0007d783          	lhu	a5,0(a5)
+ 1a8:	00078593          	addi	a1,a5,0
+ 1ac:	00068513          	addi	a0,a3,0
+ 1b0:	00000097          	auipc	ra,0x0
+ 1b4:	edc080e7          	jalr	ra,-292(ra) # 8c <add_ll_node>
+ 1b8:	fec42783          	lw	a5,-20(s0)
+ 1bc:	00178793          	addi	a5,a5,1
+ 1c0:	fef42623          	sw	a5,-20(s0)
+ 1c4:	fec42703          	lw	a4,-20(s0)
+ 1c8:	00f00793          	addi	a5,zero,15
+ 1cc:	f8e7dee3          	bge	a5,a4,168 <main+0x18>
+ 1d0:	100007b7          	lui	a5,0x10000
+ 1d4:	deadc737          	lui	a4,0xdeadc
+ 1d8:	eef70713          	addi	a4,a4,-273 # deadbeef <test_complete+0xceadbcbb>
+ 1dc:	22e7aa23          	sw	a4,564(a5) # 10000234 <test_complete>
+ 1e0:	00000793          	addi	a5,zero,0
+ 1e4:	00078513          	addi	a0,a5,0
+ 1e8:	01c12083          	lw	ra,28(sp)
+ 1ec:	01812403          	lw	s0,24(sp)
+ 1f0:	02010113          	addi	sp,sp,32
+ 1f4:	00008067          	jalr	zero,0(ra)

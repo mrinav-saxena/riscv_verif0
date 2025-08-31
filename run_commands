@@ -1,0 +1,2 @@
+python sim/scripts/run/run_sim.py -code code/rv32i_coverage.c -tb tb/sanity
+python sim/scripts/run/run_sim.py -code code/linked_list.c -tb tb/sanity

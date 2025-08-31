@@ -1,0 +1,11 @@
+=== STDOUT ===
+ELF: sim\images\rv32i_coverage\program.elf
+BIN: sim\images\rv32i_coverage\program.bin
+IMEM HEX: sim\images\rv32i_coverage\imem.hex
+DMEM HEX: sim\images\rv32i_coverage\dmem.hex
+ASM: sim\images\rv32i_coverage\program.s
+DISASM: sim\images\rv32i_coverage\program.disasm
+
+=== STDERR ===
+
+=== RETURN CODE: 0 ===
