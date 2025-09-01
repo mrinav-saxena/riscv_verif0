@@ -163,10 +163,6 @@ def main():
     # Force flush and add a small delay to ensure clean output
     sys.stdout.flush()
     
-    # Try a simple approach - just add more explicit spacing
-    print("", flush=True)
-    print("", flush=True)
-    
     print("========== BUILD MADE =====================\n", flush=True)
     sys.stdout.flush()
 

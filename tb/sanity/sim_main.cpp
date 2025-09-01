@@ -41,8 +41,11 @@ int main(int argc, char** argv) {
     main_time += 1000;
     
     // run N cycles
-    for (int i = 0; i < 10000 && !Verilated::gotFinish(); ++i) {
+    for (int i = 0; i < 200; ++i) {
         tick(top, tfp);
+        if (Verilated::gotFinish()) {
+            break ;
+        }
     }
 
     tfp->close();

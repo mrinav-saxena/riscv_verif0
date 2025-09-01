@@ -124,9 +124,9 @@ module single_cycle_core #(
 
   // Immediate generation
   logic [DATA_WIDTH-1:0] imm_value;
-  logic imm_valid ;
+  logic alu_imm_source ;
 
-  assign imm_valid = instr_type inside {I, S, B, U, J} ;
+  assign alu_imm_source = instr_type inside {I, S, U, J} ; // removed B (imm is valid, but not used in the ALU)
 
   imm_gen #(
     .DATA_WIDTH(DATA_WIDTH)
@@ -146,7 +146,7 @@ module single_cycle_core #(
   logic [DATA_WIDTH-1:0] alu_src_b ;
 
   assign alu_src_a = (opcode_e == AUIPC) ? pc : rs1_data ;
-  assign alu_src_b = imm_valid ? imm_value : rs2_data ;
+  assign alu_src_b = alu_imm_source ? imm_value : rs2_data ;
 
   alu alu_main (
     .a(alu_src_a),
@@ -178,7 +178,7 @@ module single_cycle_core #(
     0 // for SW or otherwise
   );
 
-  assign mem_read = instr_type == S ;
+  assign mem_read = (instr_reg[6:0] == 7'b0000011) ;
 
   // TODO: Add memory access logic
   mem_zerolat #(

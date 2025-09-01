@@ -27,6 +27,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vtb___024root final : public VerilatedModule 
         CData/*0:0*/ tb__DOT__dut__DOT__alu_lt;
         CData/*0:0*/ tb__DOT__dut__DOT__alu_ltu;
         CData/*3:0*/ tb__DOT__dut__DOT__mem_wstrb;
+        CData/*6:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2;
         CData/*0:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_11;
         CData/*0:0*/ tb__DOT__dut__DOT__imm_gen_inst__DOT____VdfgRegularize_hf91b520b_0_0;
         CData/*0:0*/ __VdfgRegularize_hd87f99a1_0_0;
@@ -67,6 +68,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vtb___024root final : public VerilatedModule 
         CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
         CData/*0:0*/ __Vtrigprevexpr___TOP__rst_n__0;
         CData/*0:0*/ __VactContinue;
+        IData/*31:0*/ tb__DOT__cycle_count;
         IData/*31:0*/ tb__DOT__dut__DOT__pc;
         IData/*31:0*/ tb__DOT__dut__DOT__pc_next;
         IData/*31:0*/ tb__DOT__dut__DOT__instr_reg;
@@ -79,12 +81,12 @@ class alignas(VL_CACHE_LINE_BYTES) Vtb___024root final : public VerilatedModule 
         IData/*31:0*/ tb__DOT__dut__DOT__alu_src_a;
         IData/*31:0*/ tb__DOT__dut__DOT__alu_src_b;
         IData/*31:0*/ tb__DOT__dut__DOT__mem_wdata;
-        IData/*31:0*/ tb__DOT__dut__DOT__i_imem__DOT__unnamedblk2__DOT__j;
-        IData/*31:0*/ tb__DOT__dut__DOT__i_imem__DOT__unnamedblk1__DOT__i;
     };
     struct {
+        IData/*31:0*/ tb__DOT__dut__DOT__i_imem__DOT__unnamedblk2__DOT__i;
+        IData/*31:0*/ tb__DOT__dut__DOT__i_imem__DOT__unnamedblk1__DOT__i;
         IData/*31:0*/ tb__DOT__dut__DOT__alu_main__DOT__alu_ctrl;
-        IData/*31:0*/ tb__DOT__dut__DOT__i_dmem__DOT__unnamedblk2__DOT__j;
+        IData/*31:0*/ tb__DOT__dut__DOT__i_dmem__DOT__unnamedblk2__DOT__i;
         IData/*31:0*/ tb__DOT__dut__DOT__i_dmem__DOT__unnamedblk1__DOT__i;
         IData/*31:0*/ __Vfunc_instr_enum_from_val__0__Vfuncout;
         IData/*31:0*/ __Vfunc_instr_type_enum_from_instr__1__Vfuncout;

@@ -33,10 +33,11 @@ def extract_sections(elf_path: Path, out_dir: Path):
     text_bin = out_dir / "text.bin"
     data_bin = out_dir / "data.bin"
     
-    # Extract text section
+    # Extract both .text.startup and .text sections (startup comes first)
     text_cmd = [
         "riscv-none-elf-objcopy",
         "-O", "binary",
+        "--only-section=.text.startup",
         "--only-section=.text",
         str(elf_path),
         str(text_bin)
@@ -68,12 +69,18 @@ def main():
 
     c_path = Path(args.c_file).resolve()
     ld_path = Path(args.linker_script).resolve()
+    
+    # Find startup.s file in the same directory as the linker script
+    startup_path = ld_path.parent / "startup.s"
 
     if not c_path.exists():
         print(f"C file not found: {c_path}", file=sys.stderr)
         sys.exit(1)
     if not ld_path.exists():
         print(f"Linker script not found: {ld_path}", file=sys.stderr)
+        sys.exit(1)
+    if not startup_path.exists():
+        print(f"Startup file not found: {startup_path}", file=sys.stderr)
         sys.exit(1)
 
     # Create output directory structure: sim/images/{c_filename}/
@@ -98,6 +105,7 @@ def main():
         "-T", str(ld_path),
         "-Wl,--no-relax",
         "-o", str(elf_path),
+        str(startup_path),  # Include startup.s first
         str(c_path),
     ]
     run(gcc_cmd)

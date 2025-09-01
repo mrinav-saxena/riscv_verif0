@@ -23,13 +23,13 @@ module mem_zerolat #(
 
   always @(posedge clk) begin
     if (!rst_n) begin
-      for (int i = 0; i < DEPTH; i++) begin
+      for (int i = 0; i < DEPTH; i++) begin : i_reset_block
         mem_array[i] <= '0;
       end
     end else if (write) begin
-      for (int j = 0; j < DATA_WIDTH/8; j++) begin
-        if (wstrb[j]) begin
-          mem_array[addr][j*8 +: 8] <= wdata[j*8 +: 8];
+      for (int i = 0; i < DATA_WIDTH/8; i++) begin : i_write_block
+        if (wstrb[i]) begin
+          mem_array[addr][i*8 +: 8] <= wdata[i*8 +: 8];
         end
       end
     end

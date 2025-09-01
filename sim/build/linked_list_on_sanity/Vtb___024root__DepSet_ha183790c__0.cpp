@@ -7,7 +7,6 @@
 
 VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__0(Vtb___024root* vlSelf);
 VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__1(Vtb___024root* vlSelf);
-VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__2(Vtb___024root* vlSelf);
 
 void Vtb___024root___eval_initial(Vtb___024root* vlSelf) {
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vtb___024root___eval_initial\n"); );
@@ -16,7 +15,6 @@ void Vtb___024root___eval_initial(Vtb___024root* vlSelf) {
     // Body
     Vtb___024root___eval_initial__TOP__Vtiming__0(vlSelf);
     Vtb___024root___eval_initial__TOP__Vtiming__1(vlSelf);
-    Vtb___024root___eval_initial__TOP__Vtiming__2(vlSelf);
 }
 
 VL_INLINE_OPT VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__0(Vtb___024root* vlSelf) {
@@ -25,50 +23,64 @@ VL_INLINE_OPT VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__0(Vtb___02
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
     VlWide<3>/*95:0*/ __Vtemp_1;
+    VlWide<3>/*95:0*/ __Vtemp_3;
     // Body
     while (1U) {
         co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
                                                              nullptr, 
                                                              "@(posedge clk)", 
                                                              "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                             40);
-        if (VL_UNLIKELY(((0xdeadbeefU == vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
-                          [0U])))) {
+                                                             26);
+        if (VL_UNLIKELY((((0x12U == vlSelfRef.tb__DOT__dut__DOT__opcode_e) 
+                          & (0xdeadbeefU == vlSelfRef.tb__DOT__dut__DOT__rs2_data))))) {
             vlSelfRef.tb__DOT__deadbeef_written = 1U;
-            VL_WRITEF_NX("[TB] Data memory completion signal detected at time %t\n",0,
-                         64,VL_TIME_UNITED_Q(1),-12);
+            VL_WRITEF_NX("[TB] 0xdeadbeef - test completed!%20#\n",0,
+                         64,VL_TIME_UNITED_Q(1));
             co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
                                                                  nullptr, 
                                                                  "@(posedge clk)", 
                                                                  "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 46);
+                                                                 30);
             co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
                                                                  nullptr, 
                                                                  "@(posedge clk)", 
                                                                  "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 46);
+                                                                 30);
             co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
                                                                  nullptr, 
                                                                  "@(posedge clk)", 
                                                                  "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 46);
+                                                                 30);
             co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
                                                                  nullptr, 
                                                                  "@(posedge clk)", 
                                                                  "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 46);
+                                                                 30);
             co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
                                                                  nullptr, 
                                                                  "@(posedge clk)", 
                                                                  "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 46);
+                                                                 30);
             __Vtemp_1[0U] = 0x2e686578U;
             __Vtemp_1[1U] = 0x646d656dU;
             __Vtemp_1[2U] = 0x7265735fU;
             VL_WRITEMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(3, __Vtemp_1)
                           ,  &(vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array)
                           , 0U, 0x400U);
-            VL_FINISH_MT("C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\\tb.sv", 48, "");
+            VL_FINISH_MT("C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\\tb.sv", 32, "");
+        } else {
+            vlSelfRef.tb__DOT__cycle_count = ((IData)(1U) 
+                                              + vlSelfRef.tb__DOT__cycle_count);
+            if (VL_UNLIKELY(((0U == VL_MODDIVS_III(32, vlSelfRef.tb__DOT__cycle_count, (IData)(0x64U)))))) {
+                VL_WRITEF_NX("[TB] cycle_count is %0d. writing memory for debug purposes.\n",0,
+                             32,vlSelfRef.tb__DOT__cycle_count);
+                __Vtemp_3[0U] = 0x2e686578U;
+                __Vtemp_3[1U] = 0x646d656dU;
+                __Vtemp_3[2U] = 0x7265735fU;
+                VL_WRITEMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(3, __Vtemp_3)
+                              ,  &(vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array)
+                              , 0U, 0x400U);
+            }
         }
     }
 }
@@ -78,56 +90,12 @@ VL_INLINE_OPT VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__1(Vtb___02
     Vtb__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
-    while (1U) {
-        co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
-                                                             nullptr, 
-                                                             "@(posedge clk)", 
-                                                             "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                             28);
-        if (VL_UNLIKELY((((0x12U == vlSelfRef.tb__DOT__dut__DOT__opcode_e) 
-                          & (0x100073U == vlSelfRef.tb__DOT__dut__DOT__rs2_data))))) {
-            VL_WRITEF_NX("[TB] 0xdeadbeef - test completed!%20#\n",0,
-                         64,VL_TIME_UNITED_Q(1));
-            co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
-                                                                 nullptr, 
-                                                                 "@(posedge clk)", 
-                                                                 "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 32);
-            co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
-                                                                 nullptr, 
-                                                                 "@(posedge clk)", 
-                                                                 "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 32);
-            co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
-                                                                 nullptr, 
-                                                                 "@(posedge clk)", 
-                                                                 "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 32);
-            co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
-                                                                 nullptr, 
-                                                                 "@(posedge clk)", 
-                                                                 "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 32);
-            co_await vlSelfRef.__VtrigSched_hf87a9c37__0.trigger(0U, 
-                                                                 nullptr, 
-                                                                 "@(posedge clk)", 
-                                                                 "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                                 32);
-            VL_FINISH_MT("C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\\tb.sv", 33, "");
-        }
-    }
-}
-
-VL_INLINE_OPT VlCoroutine Vtb___024root___eval_initial__TOP__Vtiming__2(Vtb___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    Vtb___024root___eval_initial__TOP__Vtiming__2\n"); );
-    Vtb__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
-    // Body
+    vlSelfRef.tb__DOT__cycle_count = 0U;
     co_await vlSelfRef.__VtrigSched_h96aaa0a4__0.trigger(0U, 
                                                          nullptr, 
                                                          "@(posedge rst_n)", 
                                                          "C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv", 
-                                                         54);
+                                                         46);
     VL_READMEM_N(true, 32, 1024, 0, std::string{"imem.hex"}
                  ,  &(vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array)
                  , 0, ~0ULL);
@@ -155,8 +123,6 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
     Vtb__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
-    CData/*6:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2;
-    tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2 = 0;
     CData/*2:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3;
     tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3 = 0;
     CData/*7:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_4;
@@ -168,14 +134,14 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
     IData/*31:0*/ __Vfunc_instr_type_enum_from_instr__1__instr_opcode;
     __Vfunc_instr_type_enum_from_instr__1__instr_opcode = 0;
     // Body
-    tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2 
-        = (0x7fU & vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
-           [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__pc 
-                       >> 2U))]);
     tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3 
         = (7U & (vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
                  [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__pc 
                              >> 2U))] >> 0xcU));
+    vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2 
+        = (0x7fU & vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
+           [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__pc 
+                       >> 2U))]);
     vlSelfRef.tb__DOT__dut__DOT__instr_rs1 = (0x1fU 
                                               & (vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
                                                  [(0x3ffU 
@@ -887,9 +853,7 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
                                                 == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
                                                | ((2U 
                                                    == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
-                                                  | ((3U 
-                                                      == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
-                                                     | (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_11))))
+                                                  | (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_11)))
                                                ? vlSelfRef.tb__DOT__dut__DOT__imm_value
                                                : vlSelfRef.tb__DOT__dut__DOT__rs2_data);
     vlSelfRef.tb__DOT__dut__DOT__alu_eq = ((1U == vlSelfRef.tb__DOT__dut__DOT__alu_main__DOT__alu_ctrl) 
@@ -990,7 +954,7 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
                                                                             & (vlSelfRef.tb__DOT__dut__DOT__alu_result 
                                                                                >> 1U)), 4U)
                                                               : 0U)));
-    if ((2U == vlSelfRef.tb__DOT__dut__DOT__instr_type)) {
+    if ((3U == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))) {
         tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_4 
             = (0xffU & vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__alu_result 
@@ -1017,14 +981,14 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
                                                      + vlSelfRef.tb__DOT__dut__DOT__pc)
                                                      : 
                                                     ((3U 
-                                                      == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
+                                                      == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
                                                       ? 
                                                      ((0U 
                                                        == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3))
                                                        ? 
                                                       (((- (IData)(
-                                                                   ((2U 
-                                                                     == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
+                                                                   ((3U 
+                                                                     == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2)) 
                                                                     & (vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                                                                        [
                                                                        (0x3ffU 
@@ -1038,8 +1002,8 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
                                                         == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3))
                                                         ? 
                                                        (((- (IData)(
-                                                                    ((2U 
-                                                                      == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
+                                                                    ((3U 
+                                                                      == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2)) 
                                                                      & (vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                                                                         [
                                                                         (0x3ffU 
@@ -1052,8 +1016,8 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
                                                        ((2U 
                                                          == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3))
                                                          ? 
-                                                        ((2U 
-                                                          == vlSelfRef.tb__DOT__dut__DOT__instr_type)
+                                                        ((3U 
+                                                          == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
                                                           ? 
                                                          vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                                                          [
@@ -1072,7 +1036,7 @@ VL_INLINE_OPT void Vtb___024root___act_sequent__TOP__0(Vtb___024root* vlSelf) {
                                                            : 0U)))))
                                                       : 
                                                      ((0x13U 
-                                                       == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
+                                                       == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
                                                        ? vlSelfRef.tb__DOT__dut__DOT__alu_result
                                                        : 0U)))
                                                     : 
@@ -1283,7 +1247,7 @@ VL_INLINE_OPT void Vtb___024root___nba_sequent__TOP__1(Vtb___024root* vlSelf) {
     // Body
     if (vlSelfRef.rst_n) {
         if ((2U == vlSelfRef.tb__DOT__dut__DOT__instr_type)) {
-            vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__unnamedblk2__DOT__j = 4U;
+            vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__unnamedblk2__DOT__i = 4U;
         }
     }
     if (vlSelfRef.rst_n) {
@@ -1487,8 +1451,6 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
     Vtb__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
-    CData/*6:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2;
-    tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2 = 0;
     CData/*2:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3;
     tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3 = 0;
     CData/*7:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_4;
@@ -1500,14 +1462,14 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
     IData/*31:0*/ __Vfunc_instr_type_enum_from_instr__1__instr_opcode;
     __Vfunc_instr_type_enum_from_instr__1__instr_opcode = 0;
     // Body
-    tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2 
-        = (0x7fU & vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
-           [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__pc 
-                       >> 2U))]);
     tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3 
         = (7U & (vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
                  [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__pc 
                              >> 2U))] >> 0xcU));
+    vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2 
+        = (0x7fU & vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
+           [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__pc 
+                       >> 2U))]);
     vlSelfRef.tb__DOT__dut__DOT__instr_rs1 = (0x1fU 
                                               & (vlSelfRef.tb__DOT__dut__DOT__i_imem__DOT__mem_array
                                                  [(0x3ffU 
@@ -2219,9 +2181,7 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
                                                 == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
                                                | ((2U 
                                                    == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
-                                                  | ((3U 
-                                                      == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
-                                                     | (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_11))))
+                                                  | (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_11)))
                                                ? vlSelfRef.tb__DOT__dut__DOT__imm_value
                                                : vlSelfRef.tb__DOT__dut__DOT__rs2_data);
     vlSelfRef.tb__DOT__dut__DOT__alu_eq = ((1U == vlSelfRef.tb__DOT__dut__DOT__alu_main__DOT__alu_ctrl) 
@@ -2322,7 +2282,7 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
                                                                             & (vlSelfRef.tb__DOT__dut__DOT__alu_result 
                                                                                >> 1U)), 4U)
                                                               : 0U)));
-    if ((2U == vlSelfRef.tb__DOT__dut__DOT__instr_type)) {
+    if ((3U == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))) {
         tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_4 
             = (0xffU & vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                [(0x3ffU & (vlSelfRef.tb__DOT__dut__DOT__alu_result 
@@ -2349,14 +2309,14 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
                                                      + vlSelfRef.tb__DOT__dut__DOT__pc)
                                                      : 
                                                     ((3U 
-                                                      == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
+                                                      == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
                                                       ? 
                                                      ((0U 
                                                        == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3))
                                                        ? 
                                                       (((- (IData)(
-                                                                   ((2U 
-                                                                     == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
+                                                                   ((3U 
+                                                                     == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2)) 
                                                                     & (vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                                                                        [
                                                                        (0x3ffU 
@@ -2370,8 +2330,8 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
                                                         == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3))
                                                         ? 
                                                        (((- (IData)(
-                                                                    ((2U 
-                                                                      == vlSelfRef.tb__DOT__dut__DOT__instr_type) 
+                                                                    ((3U 
+                                                                      == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2)) 
                                                                      & (vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                                                                         [
                                                                         (0x3ffU 
@@ -2384,8 +2344,8 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
                                                        ((2U 
                                                          == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3))
                                                          ? 
-                                                        ((2U 
-                                                          == vlSelfRef.tb__DOT__dut__DOT__instr_type)
+                                                        ((3U 
+                                                          == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
                                                           ? 
                                                          vlSelfRef.tb__DOT__dut__DOT__i_dmem__DOT__mem_array
                                                          [
@@ -2404,7 +2364,7 @@ VL_INLINE_OPT void Vtb___024root___nba_comb__TOP__0(Vtb___024root* vlSelf) {
                                                            : 0U)))))
                                                       : 
                                                      ((0x13U 
-                                                       == (IData)(tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
+                                                       == (IData)(vlSelfRef.tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2))
                                                        ? vlSelfRef.tb__DOT__dut__DOT__alu_result
                                                        : 0U)))
                                                     : 
