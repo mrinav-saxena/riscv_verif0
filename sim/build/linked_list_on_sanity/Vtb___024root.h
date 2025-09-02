@@ -28,7 +28,8 @@ class alignas(VL_CACHE_LINE_BYTES) Vtb___024root final : public VerilatedModule 
         CData/*0:0*/ tb__DOT__dut__DOT__alu_ltu;
         CData/*3:0*/ tb__DOT__dut__DOT__mem_wstrb;
         CData/*6:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_2;
-        CData/*0:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_11;
+        CData/*2:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_3;
+        CData/*0:0*/ tb__DOT__dut__DOT____VdfgRegularize_hd1c0e5ba_0_13;
         CData/*0:0*/ tb__DOT__dut__DOT__imm_gen_inst__DOT____VdfgRegularize_hf91b520b_0_0;
         CData/*0:0*/ __VdfgRegularize_hd87f99a1_0_0;
         CData/*4:0*/ __VdlyDim0__tb__DOT__dut__DOT__rf_main__DOT__regs__v0;
@@ -75,14 +76,15 @@ class alignas(VL_CACHE_LINE_BYTES) Vtb___024root final : public VerilatedModule 
         IData/*31:0*/ tb__DOT__dut__DOT__opcode_e;
         IData/*31:0*/ tb__DOT__dut__DOT__instr_type;
         IData/*31:0*/ tb__DOT__dut__DOT__rs2_data;
-        IData/*31:0*/ tb__DOT__dut__DOT__regfile_wdata;
         IData/*31:0*/ tb__DOT__dut__DOT__imm_value;
         IData/*31:0*/ tb__DOT__dut__DOT__alu_result;
         IData/*31:0*/ tb__DOT__dut__DOT__alu_src_a;
         IData/*31:0*/ tb__DOT__dut__DOT__alu_src_b;
-        IData/*31:0*/ tb__DOT__dut__DOT__mem_wdata;
+        IData/*31:0*/ tb__DOT__dut__DOT__mem_rdata;
     };
     struct {
+        IData/*31:0*/ tb__DOT__dut__DOT__mem_wdata;
+        IData/*31:0*/ tb__DOT__dut__DOT__shifted_mem_rdata;
         IData/*31:0*/ tb__DOT__dut__DOT__i_imem__DOT__unnamedblk2__DOT__i;
         IData/*31:0*/ tb__DOT__dut__DOT__i_imem__DOT__unnamedblk1__DOT__i;
         IData/*31:0*/ tb__DOT__dut__DOT__alu_main__DOT__alu_ctrl;
@@ -90,12 +92,13 @@ class alignas(VL_CACHE_LINE_BYTES) Vtb___024root final : public VerilatedModule 
         IData/*31:0*/ tb__DOT__dut__DOT__i_dmem__DOT__unnamedblk1__DOT__i;
         IData/*31:0*/ __Vfunc_instr_enum_from_val__0__Vfuncout;
         IData/*31:0*/ __Vfunc_instr_type_enum_from_instr__1__Vfuncout;
+        IData/*31:0*/ __Vdly__tb__DOT__dut__DOT__pc;
         IData/*31:0*/ __VdlyVal__tb__DOT__dut__DOT__rf_main__DOT__regs__v0;
         IData/*31:0*/ __VactIterCount;
         VlUnpacked<IData/*31:0*/, 1024> tb__DOT__dut__DOT__i_imem__DOT__mem_array;
         VlUnpacked<IData/*31:0*/, 32> tb__DOT__dut__DOT__rf_main__DOT__regs;
         VlUnpacked<IData/*31:0*/, 1024> tb__DOT__dut__DOT__i_dmem__DOT__mem_array;
-        VlUnpacked<CData/*0:0*/, 6> __Vm_traceActivity;
+        VlUnpacked<CData/*0:0*/, 5> __Vm_traceActivity;
     };
     VlNBACommitQueue<VlUnpacked<IData/*31:0*/, 1024>, false, IData/*31:0*/, 1> __VdlyCommitQueuetb__DOT__dut__DOT__i_imem__DOT__mem_array;
     VlNBACommitQueue<VlUnpacked<IData/*31:0*/, 1024>, true, IData/*31:0*/, 1> __VdlyCommitQueuetb__DOT__dut__DOT__i_dmem__DOT__mem_array;

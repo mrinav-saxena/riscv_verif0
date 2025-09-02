@@ -19,7 +19,7 @@ Vtb__Syms::Vtb__Syms(VerilatedContext* contextp, const char* namep, Vtb* modelp)
     , TOP{this, namep}
 {
         // Check resources
-        Verilated::stackCheck(186);
+        Verilated::stackCheck(154);
     // Configure time unit / time precision
     _vm_contextp__->timeunit(-12);
     _vm_contextp__->timeprecision(-12);

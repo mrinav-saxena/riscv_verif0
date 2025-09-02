@@ -1,7 +1,7 @@
 === STDOUT ===
 - V e r i l a t i o n   R e p o r t: Verilator 5.036 2025-04-27 rev UNKNOWN.REV
-- Verilator: Built from 0.149 MB sources in 8 modules, into 0.293 MB in 12 C++ files needing 0.000 MB
-- Verilator: Walltime 0.170 s (elab=0.004, cvt=0.046, bld=0.000); cpu 0.000 s on 1 threads; alloced 15.648 MB
+- Verilator: Built from 0.150 MB sources in 8 modules, into 0.286 MB in 12 C++ files needing 0.000 MB
+- Verilator: Walltime 0.091 s (elab=0.015, cvt=0.032, bld=0.000); cpu 0.000 s on 1 threads; alloced 15.660 MB
 
 === STDERR ===
 %Warning-WIDTHTRUNC: rtl/core/single_cycle\single_cycle_core.sv:62:6: Input port connection 'addr' expects 10 bits on the pin connection, but pin connection's SEL generates 30 bits.
@@ -10,15 +10,15 @@
       |      ^~~~
                      ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.036
                      ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
-%Warning-WIDTHEXPAND: rtl/core/single_cycle\single_cycle_core.sv:170:30: Operator SHIFTL expects 4 bits on the LHS, but LHS's CONST '1'h1' generates 1 bits.
+%Warning-WIDTHEXPAND: rtl/core/single_cycle\single_cycle_core.sv:172:30: Operator SHIFTL expects 4 bits on the LHS, but LHS's CONST '1'h1' generates 1 bits.
                                                                        : ... note: In instance 'tb.dut'
-  170 |     (opcode_e == SB) ? (1'b1 << alu_result[1:0]) :
+  172 |     (opcode_e == SB) ? (1'b1 << alu_result[1:0]) :
       |                              ^~
                       ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=5.036
                       ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
-%Warning-WIDTHEXPAND: rtl/core/single_cycle\single_cycle_core.sv:171:31: Operator SHIFTL expects 4 bits on the LHS, but LHS's CONST '2'h3' generates 2 bits.
+%Warning-WIDTHEXPAND: rtl/core/single_cycle\single_cycle_core.sv:173:31: Operator SHIFTL expects 4 bits on the LHS, but LHS's CONST '2'h3' generates 2 bits.
                                                                        : ... note: In instance 'tb.dut'
-  171 |     (opcode_e == SH) ? (2'b11 << (alu_result[1]+1)) : 
+  173 |     (opcode_e == SH) ? (2'b11 << (alu_result[1]*2)) : 
       |                               ^~
 %Warning-UNUSEDSIGNAL: C:/Users/DELL/OneDrive/Documents/projects/riscv_verif0/tb/sanity\tb.sv:6:7: Signal is not used: 'deadbeef_written'
                                                                                                  : ... note: In instance 'tb'

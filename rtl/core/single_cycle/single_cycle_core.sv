@@ -95,11 +95,11 @@ module single_cycle_core #(
     instr_type == I ?
       (opcode_e == JALR) ? pc_next :
       (instr_reg[6:0] == 7'b0000011) ?
-        (instr_reg[14:12] == 3'b000) ? {{(DATA_WIDTH-8){mem_rdata[7]}}, mem_rdata[7:0]} : // LB
-        (instr_reg[14:12] == 3'b001) ? {{(DATA_WIDTH-16){mem_rdata[15]}}, mem_rdata[15:0]} : // LH
-        (instr_reg[14:12] == 3'b010) ? mem_rdata : // LW
-        (instr_reg[14:12] == 3'b100) ? {{(DATA_WIDTH-8){1'b0}}, mem_rdata[7:0]} : // LBU
-        (instr_reg[14:12] == 3'b101) ? {{(DATA_WIDTH-16){1'b0}}, mem_rdata[15:0]} : // LHU
+        (instr_reg[14:12] == 3'b000) ? {{(DATA_WIDTH-8){shifted_mem_rdata[7]}}, shifted_mem_rdata[7:0]} : // LB
+        (instr_reg[14:12] == 3'b001) ? {{(DATA_WIDTH-16){shifted_mem_rdata[15]}}, shifted_mem_rdata[15:0]} : // LH
+        (instr_reg[14:12] == 3'b010) ? shifted_mem_rdata : // LW
+        (instr_reg[14:12] == 3'b100) ? {{(DATA_WIDTH-8){1'b0}}, shifted_mem_rdata[7:0]} : // LBU
+        (instr_reg[14:12] == 3'b101) ? {{(DATA_WIDTH-16){1'b0}}, shifted_mem_rdata[15:0]} : // LHU
         'd0 :
       (instr_reg[6:0] == 7'b0010011) ? alu_result : // arith/logic immediate instructions
       'd0 :
@@ -165,10 +165,12 @@ module single_cycle_core #(
   logic [DATA_WIDTH-1:0] mem_rdata ;
   logic [DATA_WIDTH-1:0] mem_wdata ;
 
+  logic [DATA_WIDTH-1:0] shifted_mem_rdata ;
+
   assign mem_write = (instr_type == S) ;
   assign mem_wstrb =
     (opcode_e == SB) ? (1'b1 << alu_result[1:0]) :
-    (opcode_e == SH) ? (2'b11 << (alu_result[1]+1)) : 
+    (opcode_e == SH) ? (2'b11 << (alu_result[1]*2)) : 
     (opcode_e == SW) ? {DATA_WIDTH/8{1'b1}} :
     {DATA_WIDTH/8{1'b0}}
   ;
@@ -194,6 +196,12 @@ module single_cycle_core #(
     .read   (mem_read),
     .rdata  (mem_rdata)
   );
+
+  assign shifted_mem_rdata =
+    (opcode_e inside {LB, LBU}) ? mem_rdata >> (alu_result[1:0] * 8) : 
+    (opcode_e inside {LH, LHU}) ? mem_rdata >> (alu_result[1] * 16) :
+    mem_rdata
+  ;
 
 endmodule
 
