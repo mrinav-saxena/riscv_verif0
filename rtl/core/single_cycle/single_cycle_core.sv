@@ -6,19 +6,22 @@ module single_cycle_core #(
   parameter int ADDR_WIDTH = 32,
   parameter int DATA_WIDTH = 32
 )(
+
   input  logic clk,
-  input  logic rst_n
-  // TODO: Add more port declarations
-  // output logic [ADDR_WIDTH-1:0] pc,
-  // output logic [ADDR_WIDTH-1:0] mem_addr,
-  // output logic [DATA_WIDTH-1:0] mem_wdata,
-  // output logic mem_write,
-  // output logic mem_read,
-  // input  logic [DATA_WIDTH-1:0] mem_rdata,
-  // input  logic mem_ready
+  input  logic rst_n,
+
+  output logic [ADDR_WIDTH-1:0] pc,
+  input  logic [DATA_WIDTH-1:0] instr_reg,
+
+  output logic [ADDR_WIDTH-1:0] dmem_addr,
+  output logic [DATA_WIDTH-1:0] dmem_wdata,
+  output logic dmem_write,
+  output logic [DATA_WIDTH/8-1:0] dmem_wstrb,
+  output logic dmem_read,
+  input  logic [DATA_WIDTH-1:0] dmem_rdata
+
 );
 
-  logic [31:0] pc ;
   logic [31:0] pc_next ; 
 
   assign pc_next = pc + 32'h4 ;
@@ -48,24 +51,6 @@ module single_cycle_core #(
       end
     end
   end
-
-  // instr fetch
-
-  logic [31:0] instr_reg;
-
-  mem_zerolat #(
-    .DATA_WIDTH(DATA_WIDTH),
-    .DEPTH(1024)
-  ) i_imem (
-    .clk    (clk),
-    .rst_n  (rst_n),
-    .addr   (pc[31:2]),
-    .wdata  ({DATA_WIDTH{1'b0}}),
-    .wstrb  ({DATA_WIDTH/8{1'b0}}),
-    .write  (1'b0),
-    .read   (1'b1),
-    .rdata  (instr_reg)
-  );
 
   // instr decode
 
@@ -159,48 +144,28 @@ module single_cycle_core #(
     .ltu(alu_ltu)
   ) ;
 
-  logic [DATA_WIDTH/8-1:0] mem_wstrb ;
-  logic mem_write ;
-  logic mem_read ;
-  logic [DATA_WIDTH-1:0] mem_rdata ;
-  logic [DATA_WIDTH-1:0] mem_wdata ;
-
   logic [DATA_WIDTH-1:0] shifted_mem_rdata ;
 
-  assign mem_write = (instr_type == S) ;
-  assign mem_wstrb =
+  assign dmem_write = (instr_type == S) ;
+  assign dmem_wstrb =
     (opcode_e == SB) ? (1'b1 << alu_result[1:0]) :
     (opcode_e == SH) ? (2'b11 << (alu_result[1]*2)) : 
     (opcode_e == SW) ? {DATA_WIDTH/8{1'b1}} :
     {DATA_WIDTH/8{1'b0}}
   ;
-  assign mem_wdata = rs2_data << (
+  assign dmem_wdata = rs2_data << (
     opcode_e == SB ? (alu_result[1:0] * 8) :
     opcode_e == SH ? (alu_result[1] * 16) :
     0 // for SW or otherwise
   );
 
-  assign mem_read = (instr_reg[6:0] == 7'b0000011) ;
-
-  // TODO: Add memory access logic
-  mem_zerolat #(
-    .DATA_WIDTH(DATA_WIDTH),
-    .DEPTH(1024)
-  ) i_dmem (
-    .clk    (clk),
-    .rst_n  (rst_n),
-    .addr   (alu_result[11:2]),
-    .wdata  (mem_wdata),
-    .wstrb  (mem_wstrb),
-    .write  (mem_write),
-    .read   (mem_read),
-    .rdata  (mem_rdata)
-  );
+  assign dmem_read = (instr_reg[6:0] == 7'b0000011) ; 
+  assign dmem_addr = alu_result;
 
   assign shifted_mem_rdata =
-    (opcode_e inside {LB, LBU}) ? mem_rdata >> (alu_result[1:0] * 8) : 
-    (opcode_e inside {LH, LHU}) ? mem_rdata >> (alu_result[1] * 16) :
-    mem_rdata
+    (opcode_e inside {LB, LBU}) ? dmem_rdata >> (alu_result[1:0] * 8) : 
+    (opcode_e inside {LH, LHU}) ? dmem_rdata >> (alu_result[1] * 16) :
+    dmem_rdata
   ;
 
 endmodule
