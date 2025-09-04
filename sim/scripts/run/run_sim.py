@@ -94,7 +94,7 @@ def main():
 
         print("========== HEX FILES BUILT AND COPIED ================\n")
 
-    # 2) Run verilator simulation
+    # 2) Verilator compilation
     print("========== [2/4] VERILATOR COMPILATION ==========")
     print("Starting Verilator simulation...")
     

@@ -1,1 +1,8 @@
 __pycache__
+sim/build/*/*
+!sim/build/*/*.exe
+sim/images/*/*.bin
+sim/images/*/*.elf
+sim/images/*/*.s
+sim/runs/*/*.log
+sim/runs/*/*.s
