@@ -1,8 +1,8 @@
-+incdir+./rtl/core/single_cycle
++incdir+./rtl/core/multi_cycle
 +incdir+./rtl/core/common
-+incdir+./rtl/mem/zerolat
++incdir+./rtl/mem/nzlat
 
-+incdir+./tb/sanity
++incdir+./tb/stall_for_mem
 
 ./rtl/core/common/types.sv
 ./rtl/core/common/alu_input_logic.sv
@@ -13,6 +13,7 @@
 ./rtl/core/common/regfile.sv
 ./rtl/core/common/writeback_logic.sv
 
-./rtl/core/single_cycle/single_cycle_core.sv
+./rtl/core/multi_cycle/stall_for_mem_core.sv
 
 ./rtl/mem/zerolat/mem_zerolat.sv
+./rtl/mem/nzlat/mem_nzlat.sv

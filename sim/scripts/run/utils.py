@@ -80,6 +80,14 @@ def run_with_logging(cmd, log_path, description="Command", cwd=None, env=None):
     print(f"{description} output will be logged to {log_path}")
     
     with open(log_path, 'w') as log_file:
+        # Write the command at the top of the log file
+        log_file.write("=== COMMAND ===\n")
+        if isinstance(cmd, list):
+            log_file.write(" ".join(map(str, cmd)) + "\n")
+        else:
+            log_file.write(str(cmd) + "\n")
+        log_file.write("\n")
+        
         result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, env=env)
         log_file.write("=== STDOUT ===\n")
         log_file.write(result.stdout)

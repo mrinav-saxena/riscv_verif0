@@ -1,3 +1,4 @@
+.gitignore
 __pycache__
 sim/build/*/*
 !sim/build/*/*.exe

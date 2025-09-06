@@ -108,14 +108,14 @@ def main():
     build_dir.mkdir(parents=True, exist_ok=True)
     
     # Build verilator command with proper include paths (relative to root directory)
-    flist_path = Path("sim/scripts/flists/sanity.f")  # Relative to root
+    flist_path = Path("sim/scripts/flists") / f"{tb_dirname}.f"  # Dynamic based on TB directory name
     verilator_cmd = [
         "verilator_bin", "-Wall", "--trace", "--trace-fst", "--trace-depth", "4", "--timing",
         "--cc", str((tb_path / "tb.sv").resolve().as_posix()),  # Convert to forward slashes
         "--exe", str((tb_path / "sim_main.cpp").resolve().as_posix()),  # Convert to forward slashes and resolve
         "--Mdir", str(build_dir),  # Use absolute path
         "-f", str(flist_path),  # Include file list
-        "-O3", "-Wno-fatal",
+        "-O3", "-Wno-fatal", "--top-module", "tb",  # Force tb as top-level module
         "-CFLAGS", "-IC:/msys64/mingw64/include -DWIN32 -D_WIN32 -D__MINGW64__",
         "-LDFLAGS", "-LC:/msys64/mingw64/lib -lz"
     ]
