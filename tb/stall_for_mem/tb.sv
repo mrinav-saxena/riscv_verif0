@@ -19,7 +19,7 @@ module tb # (
     logic [ADDR_WIDTH-1:0] dmem_addr;
     logic [DATA_WIDTH-1:0] dmem_wdata;
     logic [DATA_WIDTH/8-1:0] dmem_wstrb;
-    logic dmem_write;
+    logic dmem_write_r;
     logic dmem_read;
     logic [DATA_WIDTH-1:0] dmem_rdata;
     logic dmem_ready;
@@ -37,7 +37,7 @@ module tb # (
         .dmem_addr (dmem_addr),
         .dmem_wstrb (dmem_wstrb),
         .dmem_wdata (dmem_wdata),
-        .dmem_write (dmem_write),
+        .dmem_write_r (dmem_write_r),
         .dmem_read (dmem_read),
         .dmem_rdata (dmem_rdata),
         .dmem_ready (dmem_ready)
@@ -59,22 +59,23 @@ module tb # (
         .rdata  (instr),
         .ready  (instr_ready_i)
     );
-
-    /*
-    mem_zerolat #(
+    
+    mem_nzlat #(
         .DATA_WIDTH(DATA_WIDTH),
-        .DEPTH(DMEM_DEPTH)
+        .DEPTH(DMEM_DEPTH),
+        .READ_LATENCY(5),
+        .WRITE_LATENCY(5)
     ) i_dmem (
         .clk    (clk),
         .rst_n  (rst_n),
         .addr   (dmem_addr[$clog2(DMEM_DEPTH)+1:2]),
         .wdata  (dmem_wdata),
         .wstrb  (dmem_wstrb),
-        .write  (dmem_write),
+        .write  (dmem_write_r),
         .read   (dmem_read),
-        .rdata  (dmem_rdata)
+        .rdata  (dmem_rdata),
+        .ready  (dmem_ready)
     );
-    */
 
     always @(posedge clk) begin
         /*

@@ -105,10 +105,10 @@ module mem_nzlat #(
 
             Idle : begin
                 if (write == 1'b1) begin
-                    write_counter_next = WRITE_LATENCY ;
+                    write_counter_next = $urandom_range(1, WRITE_LATENCY) ;
                     next_state = WRITE_LATENCY != 0 ? ProcessingWdata : Ready ;
                 end else if (read == 1'b1) begin
-                    read_counter_next = READ_LATENCY ;
+                    read_counter_next = $urandom_range(1, READ_LATENCY) ;
                     next_state = READ_LATENCY != 0 ? GettingRdata : Ready ;
                 end else begin
                     next_state = Idle ;
