@@ -14,12 +14,12 @@ module tb # (
     logic [ADDR_WIDTH-1:0] pc;
     logic read_instr;
     logic [DATA_WIDTH-1:0] instr;
-    logic instr_ready_i;
+    logic instr_ready;
 
     logic [ADDR_WIDTH-1:0] dmem_addr;
     logic [DATA_WIDTH-1:0] dmem_wdata;
     logic [DATA_WIDTH/8-1:0] dmem_wstrb;
-    logic dmem_write_r;
+    logic dmem_write;
     logic dmem_read;
     logic [DATA_WIDTH-1:0] dmem_rdata;
     logic dmem_ready;
@@ -31,16 +31,16 @@ module tb # (
         .clk       (clk),
         .rst_n     (rst_n),
         .pc        (pc),
-        .read_instr (read_instr),
+        .read_instr_o (read_instr),
         .instr_i (instr),
-        .instr_ready_i (instr_ready_i),
+        .instr_ready_i (instr_ready),
         .dmem_addr (dmem_addr),
         .dmem_wstrb (dmem_wstrb),
         .dmem_wdata (dmem_wdata),
-        .dmem_write_r (dmem_write_r),
-        .dmem_read (dmem_read),
+        .dmem_write_o (dmem_write),
+        .dmem_read_o (dmem_read),
         .dmem_rdata (dmem_rdata),
-        .dmem_ready (dmem_ready)
+        .dmem_ready_i (dmem_ready)
     );
 
     mem_nzlat #(
@@ -57,7 +57,7 @@ module tb # (
         .write  (1'b0),
         .read   (read_instr),
         .rdata  (instr),
-        .ready  (instr_ready_i)
+        .ready  (instr_ready)
     );
     
     mem_nzlat #(
@@ -71,37 +71,54 @@ module tb # (
         .addr   (dmem_addr[$clog2(DMEM_DEPTH)+1:2]),
         .wdata  (dmem_wdata),
         .wstrb  (dmem_wstrb),
-        .write  (dmem_write_r),
+        .write  (dmem_write),
         .read   (dmem_read),
         .rdata  (dmem_rdata),
         .ready  (dmem_ready)
     );
 
     always @(posedge clk) begin
-        /*
         if ((dut.opcode_e == SW) && (dut.rs2_data == 32'hdeadbeef)) begin
             deadbeef_written = 1'b1 ; 
             $display("[TB] 0xdeadbeef - test completed!", $time);
-            repeat(5) @(posedge clk);
+            wait (dut.instruction_complete == 1'b1);
             $writememh("res_dmem.hex", i_dmem.mem_array, 0, DMEM_DEPTH) ;
             $finish;
         end else begin
             cycle_count ++ ;
-            if (cycle_count % 100 == 0) begin
+            if (cycle_count % 1000 == 0) begin
                 $display("[TB] cycle_count is %0d. writing memory for debug purposes.", cycle_count);
                 $writememh("res_dmem.hex", i_dmem.mem_array, 0, DMEM_DEPTH) ;
             end
         end
-        */
+    end
+
+    always @(posedge dut.instruction_complete) begin
+        pc_seq_fh = $fopen("pc_seq.hex", "a");
+        if (pc_seq_fh == 0) begin
+            $display("[TB] Failed to open pc_seq.hex");
+            $finish;
+        end
+        $fdisplay(pc_seq_fh, "%h", dut.pc);
+        $fclose(pc_seq_fh);
     end
   
+    integer pc_seq_fh ;
+
     // Load instruction memory and data memory from HEX files
     initial begin
         cycle_count = 0 ;
         @ (posedge rst_n);
         $readmemh("imem.hex", i_imem.mem_array);
-        // $readmemh("dmem.hex", i_dmem.mem_array);
+        $readmemh("dmem.hex", i_dmem.mem_array);
         $display("[TB] Loaded imem.hex and dmem.hex");
+        pc_seq_fh = $fopen ("pc_seq.hex", "w");
+        if (pc_seq_fh == 0) begin
+            $display("[TB] Failed to open pc_seq.hex");
+            $finish;
+        end
+        $fdisplay(pc_seq_fh, "// PC sequence!");
+        $fclose(pc_seq_fh);
     end
 
 endmodule

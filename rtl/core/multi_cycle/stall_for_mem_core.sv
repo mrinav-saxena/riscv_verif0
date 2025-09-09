@@ -10,21 +10,21 @@ module stall_for_mem_core #(
     input  logic rst_n ,
 
     output logic [ADDR_WIDTH-1:0] pc ,
-    output logic read_instr ,
+    output logic read_instr_o ,
     input  logic [DATA_WIDTH-1:0] instr_i ,
     input  logic instr_ready_i ,
 
     output logic [ADDR_WIDTH-1:0] dmem_addr ,
     output logic [DATA_WIDTH-1:0] dmem_wdata ,
-    output logic dmem_write_r ,
+    output logic dmem_write_o,
     output logic [DATA_WIDTH/8-1:0] dmem_wstrb ,
-    output logic dmem_read ,
+    output logic dmem_read_o ,
     input  logic [DATA_WIDTH-1:0] dmem_rdata ,
-    input  logic dmem_ready
+    input  logic dmem_ready_i
 
 ) ;
 
-    typedef enum {ReqInstr, Wait4Instr, ReqReadData, Wait4ReadData, ReqDataWrite, Wait4DataWrite} mem_state_e ;
+    typedef enum {ReqInstr, Wait4Instr, Wait4ReadData, Wait4DataWrite} mem_state_e ;
     mem_state_e curr_state, next_state ;
 
     logic [ADDR_WIDTH-1:0] pc_final ;
@@ -48,6 +48,7 @@ module stall_for_mem_core #(
             instr_r <= 'h0 ;
             curr_state <= ReqInstr ;
         end else begin
+
             curr_state <= next_state ;
 
             if (latch_instr == 1'b1) begin
@@ -56,50 +57,48 @@ module stall_for_mem_core #(
 
             if (instruction_complete == 1'b1) begin
                 pc <= pc_final ;
-            end
-
-            if (curr_state == ReqDataWrite) begin
-                dmem_write_r <= dmem_write ;
-            end else begin
-                dmem_write_r <= 1'b0 ;
-            end
+            end // else nothing
 
         end
     end
 
     always @(*) begin
         next_state = curr_state ;
+        instruction_complete = 1'b0 ;
+        latch_instr = 1'b0 ;
         case (curr_state)
             ReqInstr : begin
-                read_instr = 1'b1 ;
                 next_state = Wait4Instr ;
-                instruction_complete = 1'b0 ;
             end
             Wait4Instr : begin
-                read_instr = 1'b0 ;
-                latch_instr = 1'b1 ;
                 if (instr_ready_i == 1'b1) begin
+                    latch_instr = 1'b1 ;
                     if (opcode_e inside {LB, LH, LW, LBU, LHU}) begin
-                        next_state = ReqReadData ;
+                        next_state = Wait4ReadData ;
                     end else if (instr_type == S) begin
-                        next_state = ReqDataWrite ;
+                        next_state = Wait4DataWrite ;
                     end else begin
                         instruction_complete = 1'b1 ;
                         next_state = ReqInstr ;
                     end
                 end
             end
-            ReqDataWrite : begin
-                next_state = Wait4DataWrite ;
-            end
             Wait4DataWrite : begin
-                if (dmem_ready == 1'b1) begin
+                if (dmem_ready_i == 1'b1) begin
+                    instruction_complete = 1'b1 ;
+                    next_state = ReqInstr ;
+                end
+            end
+            Wait4ReadData : begin
+                if (dmem_ready_i == 1'b1) begin
                     instruction_complete = 1'b1 ;
                     next_state = ReqInstr ;
                 end
             end
         endcase
     end
+
+    assign read_instr_o = (curr_state == ReqInstr) ;
 
     pc_logic #(
         .ADDR_WIDTH(ADDR_WIDTH) ,
@@ -128,7 +127,7 @@ module stall_for_mem_core #(
     assign instr_rd = instr_forwarded [11:7] ;
 
     logic [DATA_WIDTH-1:0] regfile_wdata ;
-    logic regfile_wen ;
+    logic regfile_wen, regfile_wen_r ;
 
     regfile rf_main (
         .clk(clk),
@@ -137,7 +136,7 @@ module stall_for_mem_core #(
         .rs2(instr_rs2),
         .rd(instr_rd),
         .wdata(regfile_wdata),
-        .wen(regfile_wen),
+        .wen(regfile_wen_r),
         .wstrb({DATA_WIDTH/8{1'b1}}),
         .rs1_data(rs1_data),
         .rs2_data(rs2_data)
@@ -160,7 +159,7 @@ module stall_for_mem_core #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
     ) alu_input_logic_inst (
-        .pc(pc_final),
+        .pc(pc),
         .opcode_e(opcode_e),
         .instr_type(instr_type),
         .rs1_data(rs1_data),
@@ -185,7 +184,7 @@ module stall_for_mem_core #(
         .ltu(alu_ltu)
     ) ;
 
-    logic dmem_read_r ;
+    logic dmem_read ;
     logic dmem_write ;
 
     dmem_input_and_ctrl_logic #(
@@ -203,6 +202,9 @@ module stall_for_mem_core #(
         .dmem_wstrb(dmem_wstrb)
     ) ;
 
+    assign dmem_read_o = (dmem_read && (curr_state == Wait4Instr) && (instr_ready_i == 1'b1)) ;
+    assign dmem_write_o = (dmem_write && (curr_state == Wait4Instr) && (instr_ready_i == 1'b1)) ;
+
     writeback_logic #(
         .DATA_WIDTH(DATA_WIDTH)
     ) writeback_logic_inst (
@@ -215,6 +217,8 @@ module stall_for_mem_core #(
         .regfile_wen(regfile_wen),
         .regfile_wdata(regfile_wdata)
     ) ;
+
+    assign regfile_wen_r = (instruction_complete == 1'b1) ? regfile_wen : 1'b0 ;
 
 endmodule : stall_for_mem_core
 
