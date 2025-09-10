@@ -1,4 +1,5 @@
 .gitignore
+**/golden_dmem.*
 __pycache__
 sim/build/*/*
 !sim/build/*/*.exe
