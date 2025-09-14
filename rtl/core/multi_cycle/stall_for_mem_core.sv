@@ -104,15 +104,15 @@ module stall_for_mem_core #(
         .ADDR_WIDTH(ADDR_WIDTH) ,
         .DATA_WIDTH(DATA_WIDTH)
     ) pc_logic_inst (
-        .pc(pc) ,
-        .opcode_e(opcode_e) ,
-        .imm_value(imm_value) ,
-        .alu_result(alu_result) ,
-        .alu_eq(alu_eq) ,
-        .alu_lt(alu_lt) ,
-        .alu_ltu(alu_ltu) ,
-        .pc_final(pc_final) ,
-        .pc_next(pc_next)
+        .pc_i(pc) ,
+        .opcode_i(opcode_e) ,
+        .imm_value_i(imm_value) ,
+        .alu_result_i(alu_result) ,
+        .alu_eq_i(alu_eq) ,
+        .alu_lt_i(alu_lt) ,
+        .alu_ltu_i(alu_ltu) ,
+        .pc_final_o(pc_final) ,
+        .pc_next_o(pc_next)
     ) ;
 
     logic [4:0] instr_rs1 ;
@@ -132,14 +132,14 @@ module stall_for_mem_core #(
     regfile rf_main (
         .clk(clk),
         .rst_n(rst_n),
-        .rs1(instr_rs1),
-        .rs2(instr_rs2),
-        .rd(instr_rd),
-        .wdata(regfile_wdata),
-        .wen(regfile_wen_r),
-        .wstrb({DATA_WIDTH/8{1'b1}}),
-        .rs1_data(rs1_data),
-        .rs2_data(rs2_data)
+        .rs1_i(instr_rs1),
+        .rs2_i(instr_rs2),
+        .rd_i(instr_rd),
+        .wdata_i(regfile_wdata),
+        .wen_i(regfile_wen_r),
+        .wstrb_i({DATA_WIDTH/8{1'b1}}),
+        .rs1_data_o(rs1_data),
+        .rs2_data_o(rs2_data)
     ) ;
 
     logic [DATA_WIDTH-1:0] imm_value;
@@ -147,8 +147,8 @@ module stall_for_mem_core #(
     imm_gen #(
         .DATA_WIDTH(DATA_WIDTH)
     ) imm_gen_inst (
-        .instr(instr_forwarded),
-        .imm_out(imm_value)
+        .instr_i(instr_forwarded),
+        .imm_out_o(imm_value)
     ) ;
     
     logic [DATA_WIDTH-1:0] alu_src_a ;
@@ -159,14 +159,14 @@ module stall_for_mem_core #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
     ) alu_input_logic_inst (
-        .pc(pc),
-        .opcode_e(opcode_e),
-        .instr_type(instr_type),
-        .rs1_data(rs1_data),
-        .rs2_data(rs2_data),
-        .imm_value(imm_value),
-        .alu_src_a(alu_src_a),
-        .alu_src_b(alu_src_b)
+        .pc_i(pc),
+        .opcode_i(opcode_e),
+        .instr_type_i(instr_type),
+        .rs1_data_i(rs1_data),
+        .rs2_data_i(rs2_data),
+        .imm_value_i(imm_value),
+        .alu_src_a_o(alu_src_a),
+        .alu_src_b_o(alu_src_b)
     ) ;
 
     logic alu_eq ;
@@ -174,14 +174,14 @@ module stall_for_mem_core #(
     logic alu_ltu ;
     
     alu alu_main (
-        .a(alu_src_a),
-        .b(alu_src_b),
-        .instr_type(instr_type),
-        .opcode_e(opcode_e),
-        .result(alu_result),
-        .eq(alu_eq),
-        .lt(alu_lt),
-        .ltu(alu_ltu)
+        .a_i(alu_src_a),
+        .b_i(alu_src_b),
+        .instr_type_i(instr_type),
+        .opcode_i(opcode_e),
+        .result_o(alu_result),
+        .eq_o(alu_eq),
+        .lt_o(alu_lt),
+        .ltu_o(alu_ltu)
     ) ;
 
     logic dmem_read ;
@@ -191,15 +191,15 @@ module stall_for_mem_core #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
     ) dmem_input_and_ctrl_logic_inst (
-        .opcode_e(opcode_e),
-        .instr_type(instr_type),
-        .rs2_data(rs2_data),
-        .alu_result(alu_result),
-        .dmem_addr(dmem_addr),
-        .dmem_read(dmem_read),
-        .dmem_write(dmem_write),
-        .dmem_wdata(dmem_wdata),
-        .dmem_wstrb(dmem_wstrb)
+        .opcode_i(opcode_e),
+        .instr_type_i(instr_type),
+        .rs2_data_i(rs2_data),
+        .alu_result_i(alu_result),
+        .dmem_addr_o(dmem_addr),
+        .dmem_read_o(dmem_read),
+        .dmem_write_o(dmem_write),
+        .dmem_wdata_o(dmem_wdata),
+        .dmem_wstrb_o(dmem_wstrb)
     ) ;
 
     assign dmem_read_o = (dmem_read && (curr_state == Wait4Instr) && (instr_ready_i == 1'b1)) ;
@@ -208,14 +208,14 @@ module stall_for_mem_core #(
     writeback_logic #(
         .DATA_WIDTH(DATA_WIDTH)
     ) writeback_logic_inst (
-        .alu_result(alu_result),
-        .instr_type(instr_type),
-        .opcode_e(opcode_e),
-        .pc_next(pc_next),
-        .imm_value(imm_value),
-        .dmem_rdata(dmem_rdata),
-        .regfile_wen(regfile_wen),
-        .regfile_wdata(regfile_wdata)
+        .alu_result_i(alu_result),
+        .instr_type_i(instr_type),
+        .opcode_i(opcode_e),
+        .pc_next_i(pc_next),
+        .imm_value_i(imm_value),
+        .dmem_rdata_i(dmem_rdata),
+        .regfile_wen_o(regfile_wen),
+        .regfile_wdata_o(regfile_wdata)
     ) ;
 
     assign regfile_wen_r = (instruction_complete == 1'b1) ? regfile_wen : 1'b0 ;

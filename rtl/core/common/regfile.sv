@@ -4,14 +4,14 @@
 module regfile #(parameter int DATA_WIDTH = 32, parameter int N_REGS = 32) (
     input logic clk,
     input logic rst_n,
-    input logic [4:0] rs1,
-    input logic [4:0] rs2,
-    input logic [4:0] rd,
-    input logic [DATA_WIDTH-1:0] wdata,
-    input logic wen,
-    input logic [DATA_WIDTH/8 - 1:0] wstrb,
-    output logic [DATA_WIDTH-1:0] rs1_data,
-    output logic [DATA_WIDTH-1:0] rs2_data
+    input logic [4:0] rs1_i,
+    input logic [4:0] rs2_i,
+    input logic [4:0] rd_i,
+    input logic [DATA_WIDTH-1:0] wdata_i,
+    input logic wen_i,
+    input logic [DATA_WIDTH/8 - 1:0] wstrb_i,
+    output logic [DATA_WIDTH-1:0] rs1_data_o,
+    output logic [DATA_WIDTH-1:0] rs2_data_o
 ) ;
 
     logic [DATA_WIDTH-1:0] regs [31:0];
@@ -31,15 +31,15 @@ module regfile #(parameter int DATA_WIDTH = 32, parameter int N_REGS = 32) (
     // write logic
     always @(posedge clk) begin
         if (rst_n == 1'b1) begin
-            if (wen && (rd != 5'b0)) begin
-                regs[rd] <= wdata ;
+            if (wen_i && (rd_i != 5'b0)) begin
+                regs[rd_i] <= wdata_i ;
             end
         end
     end
 
     // read logic
-    assign rs1_data = (rs1 == 5'b0) ? {DATA_WIDTH{1'b0}} : regs[rs1];
-    assign rs2_data = (rs2 == 5'b0) ? {DATA_WIDTH{1'b0}} : regs[rs2];
+    assign rs1_data_o = (rs1_i == 5'b0) ? {DATA_WIDTH{1'b0}} : regs[rs1_i];
+    assign rs2_data_o = (rs2_i == 5'b0) ? {DATA_WIDTH{1'b0}} : regs[rs2_i];
 
 endmodule
 

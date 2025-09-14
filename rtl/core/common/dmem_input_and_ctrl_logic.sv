@@ -5,32 +5,32 @@ module dmem_input_and_ctrl_logic #(
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32
 ) (
-    input rv32i_base_instr opcode_e,
-    input rv32i_base_instr_type instr_type,
-    input logic [DATA_WIDTH-1:0] rs2_data,
-    input logic [DATA_WIDTH-1:0] alu_result,
+    input rv32i_base_instr opcode_i,
+    input rv32i_base_instr_type instr_type_i,
+    input logic [DATA_WIDTH-1:0] rs2_data_i,
+    input logic [DATA_WIDTH-1:0] alu_result_i,
 
-    output logic [DATA_WIDTH-1:0] dmem_addr,
-    output logic dmem_read,
-    output logic dmem_write,
-    output logic [DATA_WIDTH-1:0] dmem_wdata,
-    output logic [DATA_WIDTH/8-1:0] dmem_wstrb
+    output logic [DATA_WIDTH-1:0] dmem_addr_o,
+    output logic dmem_read_o,
+    output logic dmem_write_o,
+    output logic [DATA_WIDTH-1:0] dmem_wdata_o,
+    output logic [DATA_WIDTH/8-1:0] dmem_wstrb_o
 ) ;
 
-    assign dmem_addr = alu_result;
+    assign dmem_addr_o = alu_result_i;
 
-    assign dmem_read = (opcode_e inside {LB, LH, LW, LBU, LHU}) ;
+    assign dmem_read_o = (opcode_i inside {LB, LH, LW, LBU, LHU}) ;
 
-    assign dmem_write = (instr_type == S) ;
-    assign dmem_wstrb =
-        (opcode_e == SB) ? (1'b1 << alu_result[1:0]) :
-        (opcode_e == SH) ? (2'b11 << (alu_result[1]*2)) : 
-        (opcode_e == SW) ? {DATA_WIDTH/8{1'b1}} :
+    assign dmem_write_o = (instr_type_i == S) ;
+    assign dmem_wstrb_o =
+        (opcode_i == SB) ? (1'b1 << alu_result_i[1:0]) :
+        (opcode_i == SH) ? (2'b11 << (alu_result_i[1]*2)) : 
+        (opcode_i == SW) ? {DATA_WIDTH/8{1'b1}} :
         {DATA_WIDTH/8{1'b0}}
     ;
-    assign dmem_wdata = rs2_data << (
-        opcode_e == SB ? (alu_result[1:0] * 8) :
-        opcode_e == SH ? (alu_result[1] * 16) :
+    assign dmem_wdata_o = rs2_data_i << (
+        opcode_i == SB ? (alu_result_i[1:0] * 8) :
+        opcode_i == SH ? (alu_result_i[1] * 16) :
         0 // for SW or otherwise
     );
 
