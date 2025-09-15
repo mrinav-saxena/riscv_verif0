@@ -12,7 +12,8 @@ module ifidex_stage #(
     output logic [ADDR_WIDTH-1:0] pc_o ,
     output logic read_instr_o ,
     input  logic [DATA_WIDTH-1:0] instr_i ,
-    input  logic instr_ready_i , 
+    input  logic instr_ready_i ,
+     
 
 ) ;
 

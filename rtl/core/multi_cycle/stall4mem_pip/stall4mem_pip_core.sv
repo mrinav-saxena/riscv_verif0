@@ -26,9 +26,11 @@ module stall4mem_pip_core #(
 
     logic [DATA_WIDTH-1:0] instr_r ;
     logic [DATA_WIDTH-1:0] instr_forwarded ;
-    logic instr_ready_r ;
-    logic wait4regfile_write_r ;
+    // logic instr_ready_r ;
+    logic wait4regfile_write_r, wait4dmem_ready_r ;
     logic operands_ready_r ;
+    logic instruction_complete ;
+    logic ifidex_complete ; 
     
     rv32i_base_instr opcode_e ;
     rv32i_base_instr_type instr_type ;
@@ -45,21 +47,68 @@ module stall4mem_pip_core #(
             pc <= 'h0;
             instr_r <= 'h0 ;
             curr_ifidex_state <= ReqInstr ;
-            instr_ready_r <= 'b0 ;
-            wait4regfile_write_r <= 'b0 ;
-            operands_ready_r <= 'b0 ;
+            // instr_ready_r <= 1'b0 ;
+            wait4regfile_write_r <= 1'b0 ;
+            operands_ready_r <= 1'b0 ;
         end else begin
             curr_ifidex_state <= next_ifidex_state ;
+            if (instr_ready_i == 1'b1) begin
+                // instr_ready_r <= 1'b1 ;
+                instr_r <= instr_i ;
+            end
+            if (ifidex_complete == 1'b1) begin
+                pc <= pc_final ;
+            end
         end
     end
 
+    assign operands_ready_r = 1'b1 ;
+
     always @(*) begin
+        ifidex_complete = 1'b0 ;
+        instruction_complete = 1'b0 ;
+        next_ifidex_state = curr_ifidex_state ;
         case (curr_ifidex_state)
             ReqInstr : begin
                 next_ifidex_state = InstrWait ;
             end
             InstrWait : begin
-                if ()
+                if ((instr_ready_i/* || instr_ready_r*/) == 1'b1) begin
+                    if (instr_type inside {U, J}) begin
+                        next_ifidex_state = ReqInstr ;
+                        ifidex_complete = 1'b1 ;
+                        instruction_complete = 1'b1 ;
+                    end else if (instr_type == B) begin
+                        if (operands_ready_r == 1'b1) begin
+                            next_ifidex_state = ReqInstr ;
+                            ifidex_complete = 1'b1 ;
+                            instruction_complete = 1'b1 ;
+                        end // else, default
+                    end else if ((instr_type == R) || (instr_forwarded[6:0] inside {7'b1100111, 7'b0010011})) begin
+                        // R and I (non-load) type instructions 
+                        if ((operands_ready_r == 1'b1) && (wait4regfile_write_r == 1'b0)) begin
+                            next_ifidex_state = ReqInstr ;
+                            ifidex_complete = 1'b1 ;
+                            instruction_complete = 1'b1 ;
+                        end // else, defaults
+                    end else if ((instr_type == I)) begin   // load type instructions
+                        if ((operands_ready_r == 1'b1) && (wait4dmem_ready_r == 1'b0)) begin
+                            next_ifidex_state = ReqInstr ;
+                            ifidex_complete = 1'b1 ;
+                            instruction_complete = 1'b0 ;
+                            // signal a load
+                        end // else defaults
+                    end else if ((instr_type == S)) begin
+                        if ((operands_ready_r == 1'b1) && (wait4dmem_ready_r == 1'b0)) begin
+                            next_ifidex_state = ReqInstr ;
+                            ifidex_complete = 1'b1 ;
+                            instruction_complete = 1'b1 ;
+                            // signal a store
+                        end // else defaults
+                    end // else defaults
+                end else begin
+                    // else nothing - defaults
+                end
             end
         endcase
     end
@@ -70,8 +119,8 @@ module stall4mem_pip_core #(
     // typedef enum {Wait4DataWrite, Wait4ReadData} dmem_state_e ;
     // dmem_state_e curr_dmem_state, next_dmem_state ;
 
-    // logic [ADDR_WIDTH-1:0] pc_final ;
-    // logic [ADDR_WIDTH-1:0] pc_next ;
+    logic [ADDR_WIDTH-1:0] pc_final ;
+    logic [ADDR_WIDTH-1:0] pc_next ;
 
     // logic latch_instr ;
     // logic instruction_complete ;
@@ -131,91 +180,91 @@ module stall4mem_pip_core #(
     //     endcase
     // end
 
-    // assign read_instr_o = (curr_ifidex_state == ReqInstr) ;
+    assign read_instr_o = (curr_ifidex_state == ReqInstr) ;
 
-    // pc_logic #(
-    //     .ADDR_WIDTH(ADDR_WIDTH) ,
-    //     .DATA_WIDTH(DATA_WIDTH)
-    // ) pc_logic_inst (
-    //     .pc_i(pc) ,
-    //     .opcode_i(opcode_e) ,
-    //     .imm_value_i(imm_value) ,
-    //     .alu_result_i(alu_result) ,
-    //     .alu_eq_i(alu_eq) ,
-    //     .alu_lt_i(alu_lt) ,
-    //     .alu_ltu_i(alu_ltu) ,
-    //     .pc_final_o(pc_final) ,
-    //     .pc_next_o(pc_next)
-    // ) ;
+    pc_logic #(
+        .ADDR_WIDTH(ADDR_WIDTH) ,
+        .DATA_WIDTH(DATA_WIDTH)
+    ) pc_logic_inst (
+        .pc_i(pc) ,
+        .opcode_i(opcode_e) ,
+        .imm_value_i(imm_value) ,
+        .alu_result_i(alu_result) ,
+        .alu_eq_i(alu_eq) ,
+        .alu_lt_i(alu_lt) ,
+        .alu_ltu_i(alu_ltu) ,
+        .pc_final_o(pc_final) ,
+        .pc_next_o(pc_next)
+    ) ;
 
-    // logic [4:0] instr_rs1 ;
-    // logic [4:0] instr_rs2 ;
-    // logic [4:0] instr_rd ;
+    logic [4:0] instr_rs1 ;
+    logic [4:0] instr_rs2 ;
+    logic [4:0] instr_rd ;
 
-    // logic [DATA_WIDTH-1:0] rs1_data ;
-    // logic [DATA_WIDTH-1:0] rs2_data ;
+    logic [DATA_WIDTH-1:0] rs1_data ;
+    logic [DATA_WIDTH-1:0] rs2_data ;
 
-    // assign instr_rs1 = instr_forwarded [19:15] ;
-    // assign instr_rs2 = instr_forwarded [24:20] ;
-    // assign instr_rd = instr_forwarded [11:7] ;
+    assign instr_rs1 = instr_forwarded [19:15] ;
+    assign instr_rs2 = instr_forwarded [24:20] ;
+    assign instr_rd = instr_forwarded [11:7] ;
 
-    // logic [DATA_WIDTH-1:0] regfile_wdata ;
-    // logic regfile_wen, regfile_wen_r ;
+    logic [DATA_WIDTH-1:0] regfile_wdata ;
+    logic regfile_wen, regfile_wen_r ;
 
-    // regfile rf_main (
-    //     .clk(clk),
-    //     .rst_n(rst_n),
-    //     .rs1_i(instr_rs1),
-    //     .rs2_i(instr_rs2),
-    //     .rd_i(instr_rd),
-    //     .wdata_i(regfile_wdata),
-    //     .wen_i(regfile_wen_r),
-    //     .wstrb_i({DATA_WIDTH/8{1'b1}}),
-    //     .rs1_data_o(rs1_data),
-    //     .rs2_data_o(rs2_data)
-    // ) ;
+    regfile rf_main (
+        .clk(clk),
+        .rst_n(rst_n),
+        .rs1_i(instr_rs1),
+        .rs2_i(instr_rs2),
+        .rd_i(instr_rd),
+        .wdata_i(regfile_wdata),
+        .wen_i(regfile_wen_r),
+        .wstrb_i({DATA_WIDTH/8{1'b1}}),
+        .rs1_data_o(rs1_data),
+        .rs2_data_o(rs2_data)
+    ) ;
 
-    // logic [DATA_WIDTH-1:0] imm_value;
+    logic [DATA_WIDTH-1:0] imm_value;
 
-    // imm_gen #(
-    //     .DATA_WIDTH(DATA_WIDTH)
-    // ) imm_gen_inst (
-    //     .instr_i(instr_forwarded),
-    //     .imm_out_o(imm_value)
-    // ) ;
+    imm_gen #(
+        .DATA_WIDTH(DATA_WIDTH)
+    ) imm_gen_inst (
+        .instr_i(instr_forwarded),
+        .imm_out_o(imm_value)
+    ) ;
     
-    // logic [DATA_WIDTH-1:0] alu_src_a ;
-    // logic [DATA_WIDTH-1:0] alu_src_b ;
-    // logic [DATA_WIDTH-1:0] alu_result ;
+    logic [DATA_WIDTH-1:0] alu_src_a ;
+    logic [DATA_WIDTH-1:0] alu_src_b ;
+    logic [DATA_WIDTH-1:0] alu_result ;
 
-    // alu_input_logic #(
-    //     .ADDR_WIDTH(ADDR_WIDTH),
-    //     .DATA_WIDTH(DATA_WIDTH)
-    // ) alu_input_logic_inst (
-    //     .pc_i(pc),
-    //     .opcode_i(opcode_e),
-    //     .instr_type_i(instr_type),
-    //     .rs1_data_i(rs1_data),
-    //     .rs2_data_i(rs2_data),
-    //     .imm_value_i(imm_value),
-    //     .alu_src_a_o(alu_src_a),
-    //     .alu_src_b_o(alu_src_b)
-    // ) ;
+    alu_input_logic #(
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .DATA_WIDTH(DATA_WIDTH)
+    ) alu_input_logic_inst (
+        .pc_i(pc),
+        .opcode_i(opcode_e),
+        .instr_type_i(instr_type),
+        .rs1_data_i(rs1_data),
+        .rs2_data_i(rs2_data),
+        .imm_value_i(imm_value),
+        .alu_src_a_o(alu_src_a),
+        .alu_src_b_o(alu_src_b)
+    ) ;
 
-    // logic alu_eq ;
-    // logic alu_lt ;
-    // logic alu_ltu ;
+    logic alu_eq ;
+    logic alu_lt ;
+    logic alu_ltu ;
     
-    // alu alu_main (
-    //     .a_i(alu_src_a),
-    //     .b_i(alu_src_b),
-    //     .instr_type_i(instr_type),
-    //     .opcode_i(opcode_e),
-    //     .result_o(alu_result),
-    //     .eq_o(alu_eq),
-    //     .lt_o(alu_lt),
-    //     .ltu_o(alu_ltu)
-    // ) ;
+    alu alu_main (
+        .a_i(alu_src_a),
+        .b_i(alu_src_b),
+        .instr_type_i(instr_type),
+        .opcode_i(opcode_e),
+        .result_o(alu_result),
+        .eq_o(alu_eq),
+        .lt_o(alu_lt),
+        .ltu_o(alu_ltu)
+    ) ;
 
     // logic dmem_read ;
     // logic dmem_write ;
@@ -238,20 +287,20 @@ module stall4mem_pip_core #(
     // assign dmem_read_o = (dmem_read && (curr_ifidex_state == Wait4Instr) && (instr_ready_i == 1'b1)) ;
     // assign dmem_write_o = (dmem_write && (curr_ifidex_state == Wait4Instr) && (instr_ready_i == 1'b1)) ;
 
-    // writeback_logic #(
-    //     .DATA_WIDTH(DATA_WIDTH)
-    // ) writeback_logic_inst (
-    //     .alu_result_i(alu_result),
-    //     .instr_type_i(instr_type),
-    //     .opcode_i(opcode_e),
-    //     .pc_next_i(pc_next),
-    //     .imm_value_i(imm_value),
-    //     .dmem_rdata_i(dmem_rdata),
-    //     .regfile_wen_o(regfile_wen),
-    //     .regfile_wdata_o(regfile_wdata)
-    // ) ;
+    writeback_logic #(
+        .DATA_WIDTH(DATA_WIDTH)
+    ) writeback_logic_inst (
+        .alu_result_i(alu_result),
+        .instr_type_i(instr_type),
+        .opcode_i(opcode_e),
+        .pc_next_i(pc_next),
+        .imm_value_i(imm_value),
+        .dmem_rdata_i(dmem_rdata),
+        .regfile_wen_o(regfile_wen),
+        .regfile_wdata_o(regfile_wdata)
+    ) ;
 
-    // assign regfile_wen_r = (instruction_complete == 1'b1) ? regfile_wen : 1'b0 ;
+    assign regfile_wen_r = (instruction_complete == 1'b1) ? regfile_wen : 1'b0 ;
 
 endmodule : stall4mem_pip_core
 
