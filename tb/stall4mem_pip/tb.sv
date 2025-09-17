@@ -34,12 +34,12 @@ module tb # (
         .read_instr_o (read_instr),
         .instr_i (instr),
         .instr_ready_i (instr_ready),
-        .dmem_addr (dmem_addr),
-        .dmem_wstrb (dmem_wstrb),
-        .dmem_wdata (dmem_wdata),
+        .dmem_addr_o (dmem_addr),
+        .dmem_wstrb_o (dmem_wstrb),
+        .dmem_wdata_o (dmem_wdata),
         .dmem_write_o (dmem_write),
         .dmem_read_o (dmem_read),
-        .dmem_rdata (dmem_rdata),
+        .dmem_rdata_i (dmem_rdata),
         .dmem_ready_i (dmem_ready)
     );
 
