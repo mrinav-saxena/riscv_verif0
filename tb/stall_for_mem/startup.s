@@ -3,6 +3,7 @@
 .type _start, @function
 
 _start:
+
     /* Jump to main function */
     j main
     
