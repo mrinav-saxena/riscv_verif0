@@ -81,7 +81,8 @@ module tb # (
         if ((dut.opcode_e == SW) && (dut.rs2_data == 32'hdeadbeef)) begin
             deadbeef_written = 1'b1 ; 
             $display("[TB] 0xdeadbeef - test completed!", $time);
-            wait (dut.instruction_complete == 1'b1);
+            @(posedge dmem_write) ;
+            @(posedge dmem_ready) ;
             $writememh("res_dmem.hex", i_dmem.mem_array, 0, DMEM_DEPTH) ;
             $finish;
         end else begin
@@ -93,7 +94,7 @@ module tb # (
         end
     end
 
-    always @(posedge dut.instruction_complete) begin
+    always @(posedge dut.ifidex_complete) begin
         pc_seq_fh = $fopen("pc_seq.hex", "a");
         if (pc_seq_fh == 0) begin
             $display("[TB] Failed to open pc_seq.hex");
@@ -117,7 +118,7 @@ module tb # (
             $display("[TB] Failed to open pc_seq.hex");
             $finish;
         end
-        $fdisplay(pc_seq_fh, "// PC sequence!");
+        $fdisplay(pc_seq_fh, "// PC sequence! - stall4mem_pip");
         $fclose(pc_seq_fh);
     end
 

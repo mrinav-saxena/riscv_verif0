@@ -26,9 +26,10 @@ module stall4mem_pip_core #(
 
     logic [DATA_WIDTH-1:0] instr_r ;            // latched on cycle after instr_ready_i == 1
     logic [DATA_WIDTH-1:0] instr_forwarded ;    // available combinationally from the time instr_ready_i == 1
-    logic wait4regfile_write_r, wait4dmem_ready_r ;
-    logic operands_ready_r ;
-    logic instruction_complete ;
+    logic wait4dmem_ready_r ;
+    logic wait4regfile_write, waw_dependence, wait4regfile_write_r ;
+    logic operands_ready, raw_dependence, operands_ready_r ;
+
     logic ifidex_complete ; 
     
     rv32i_base_instr opcode_e ;
@@ -47,8 +48,6 @@ module stall4mem_pip_core #(
             pc <= 'h0;
             instr_r <= 'h0 ;
             curr_ifidex_state <= ReqInstr ;
-            wait4regfile_write_r <= 1'b0 ;
-            operands_ready_r <= 1'b0 ;
         end else begin
             curr_ifidex_state <= next_ifidex_state ;
             if (instr_ready_i == 1'b1) begin
@@ -75,22 +74,21 @@ module stall4mem_pip_core #(
     always @(*) begin
 
         ifidex_complete = 1'b0 ;
-        instruction_complete = 1'b0 ;
         next_ifidex_state = curr_ifidex_state ;
         stall_ifidex = 1'b0 ;
 
         case (instr_group)
             group_UJ : begin
-                stall_ifidex = (wait4regfile_write_r) ;
+                stall_ifidex = (wait4regfile_write) ;
             end
             group_B : begin
-                stall_ifidex = (!operands_ready_r) ;
+                stall_ifidex = (!operands_ready) ;
             end
             group_RI_nonload : begin
-                stall_ifidex = (!operands_ready_r) || (wait4regfile_write_r) ;
+                stall_ifidex = (!operands_ready) || (wait4regfile_write) ;
             end
             group_I_load, group_S : begin
-                stall_ifidex = (!operands_ready_r) || (wait4dmem_ready_r) ;
+                stall_ifidex = (!operands_ready) || (wait4dmem_ready_r) ;
             end
             // nothing for group_UNKNOWN and default - defaults
         endcase
@@ -109,15 +107,8 @@ module stall4mem_pip_core #(
             end
         endcase
         ifidex_complete = (next_ifidex_state == ReqInstr) ;
-        instruction_complete = (next_ifidex_state == ReqInstr) && (instr_group inside {group_UJ, group_B, group_RI_nonload, group_I_load, group_S});
-
+        
     end
-
-    // typedef enum {ReqInstr, Wait4Instr/*, Wait4ReadData, Wait4DataWrite*/} ifidex_state_e ;
-    // ifidex_state_e curr_ifidex_state, next_ifidex_state ;
-
-    // typedef enum {Wait4DataWrite, Wait4ReadData} dmem_state_e ;
-    // dmem_state_e curr_dmem_state, next_dmem_state ;
 
     logic [ADDR_WIDTH-1:0] pc_final ;
     logic [ADDR_WIDTH-1:0] pc_next ;
@@ -151,16 +142,16 @@ module stall4mem_pip_core #(
     assign instr_rd = instr_forwarded [11:7] ;
 
     logic [DATA_WIDTH-1:0] regfile_wdata ;
-    logic regfile_wen, regfile_wen_r ;
+    logic regfile_wen, regfile_wen_pulse ;
 
     regfile #(.DATA_WIDTH(32), .N_REGS(32)) rf_main (
         .clk(clk),
         .rst_n(rst_n),
         .rs1_i(instr_rs1),
         .rs2_i(instr_rs2),
-        .rd_i(instr_rd),
+        .rd_i(wb_rd),
         .wdata_i(regfile_wdata),
-        .wen_i(regfile_wen_r),
+        .wen_i(regfile_wen_pulse),
         .wstrb_i({DATA_WIDTH/8{1'b1}}),
         .rs1_data_o(rs1_data),
         .rs2_data_o(rs2_data)
@@ -287,40 +278,45 @@ module stall4mem_pip_core #(
     end
 
     // writeback buffer
-    logic writeback_buffer_valid_r ;
-    logic [4:0] buffered_rd ;
-    logic [DATA_WIDTH-1:0] buffered_alu_result ;
-    rv32i_base_instr_type buffered_instr_type ;
-    rv32i_base_instr buffered_opcode ;
-    logic [DATA_WIDTH-1:0] buffered_dmem_rdata ;
+    logic writeback_buffer_valid ;
+    logic [4:0] buffered_rd, wb_rd ;
+    logic [DATA_WIDTH-1:0] buffered_alu_result, wb_alu_result  ;
+    rv32i_base_instr_type buffered_instr_type, wb_instr_type ;
+    rv32i_base_instr buffered_opcode, wb_opcode ;
     logic buffer_write ;    // signal to indicate that the regfile write will be done with the wb buffer
+    
+    assign writeback_buffer_valid = (curr_dmem_state == Wait4ReadData) ;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            writeback_buffer_valid_r <= 1'b0 ;
             buffered_rd <= 'h0 ;
             buffered_alu_result <= 'h0 ;
             buffered_instr_type <= UNKNOWN ;
             buffered_opcode <= NOP ;
-            buffered_dmem_rdata <= 'h0 ;
         end else begin
             if (dmem_read_o == 1'b1) begin
-                writeback_buffer_valid_r <= 1'b1 ;
                 buffered_rd <= instr_rd ;
                 buffered_alu_result <= alu_result ;
                 buffered_instr_type <= instr_type ;
                 buffered_opcode <= opcode_e ;
             end else if (dmem_ready_i == 1'b1) begin
-                writeback_buffer_valid_r <= 1'b0 ;
-                buffered_dmem_rdata <= dmem_rdata_i ;
-                // buffered_rd <= 'h0 ;
-                // buffered_alu_result <= 'h0 ;
-                // buffered_instr_type <= instr_type ;
-                // buffered_opcode <= opcode_e ;
-                // buffered_dmem_rdata <= 'h0 ;
+                buffered_rd <= 'h0 ;
+                buffered_alu_result <= 'h0 ;
+                buffered_instr_type <= UNKNOWN ;
+                buffered_opcode <= NOP ;
             end
         end
     end
+
+    assign raw_dependence = (instr_ready_i || (curr_ifidex_state == StallInstr)) && (buffered_rd != 'h0) && (writeback_buffer_valid == 1'b1) && (
+        (instr_type == I) ? (buffered_rd == instr_rs1) :
+        (instr_type inside {R, B, S}) ? ((buffered_rd == instr_rs1) || (buffered_rd == instr_rs2)) :
+        1'b0
+    ) ;
+
+    assign waw_dependence = (instr_ready_i || (curr_ifidex_state == StallInstr)) && (buffered_rd != 'h0) && (writeback_buffer_valid == 1'b1) && (
+        instr_type inside {U, J, R, I} ? (buffered_rd == instr_rd) : 0
+    ) ;
 
     always @ (posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -329,28 +325,32 @@ module stall4mem_pip_core #(
         end else begin
             if (curr_ifidex_state == ReqInstr) begin
                 operands_ready_r <= 1'b1 ;
-            end else if (writeback_buffer_valid_r == 1'b1) begin
-                if (instr_ready_i == 1'b1) begin
-                    case (instr_type)
-                        I :         operands_ready_r <= !(buffered_rd == instr_rs1) ;
-                        R, B, S :   operands_ready_r <= !((buffered_rd == instr_rs1) || (buffered_rd == instr_rs2)) ;
-                        default :   operands_ready_r <= 1'b1 ;
-                    endcase
-                end else begin
-
-                end 
-            end else begin
+                wait4regfile_write_r <= 1'b0 ;
+            end else if ((instr_ready_i == 1'b1) && (buffer_write != 1'b1)) begin
+                operands_ready_r <= !raw_dependence ;
+                wait4regfile_write_r <= waw_dependence ;
+            end else if (buffer_write == 1'b1) begin
                 operands_ready_r <= 1'b1 ;
-            end
+                wait4regfile_write_r <= 1'b0 ;
+            end // nothing, maintain value
         end
     end
+
+    assign operands_ready = !(raw_dependence || (!operands_ready_r));
+    assign wait4regfile_write = wait4regfile_write_r || waw_dependence || buffer_write ;
+    // ^buffer_write takes priority over other instructions that write to regfile when ifidex_complete => stall em for 1 cycle
+
+    assign wb_rd = buffer_write ? buffered_rd : instr_rd ;
+    assign wb_alu_result = buffer_write ? buffered_alu_result : alu_result ;
+    assign wb_instr_type = buffer_write ? buffered_instr_type : instr_type ;
+    assign wb_opcode = buffer_write ? buffered_opcode : opcode_e ;
 
     writeback_logic #(
         .DATA_WIDTH(DATA_WIDTH)
     ) writeback_logic_inst (
-        .alu_result_i(alu_result),
-        .instr_type_i(instr_type),
-        .opcode_i(opcode_e),
+        .alu_result_i(wb_alu_result),
+        .instr_type_i(wb_instr_type),
+        .opcode_i(wb_opcode),
         .pc_next_i(pc_next),
         .imm_value_i(imm_value),
         .dmem_rdata_i(dmem_rdata_i),
@@ -358,7 +358,14 @@ module stall4mem_pip_core #(
         .regfile_wdata_o(regfile_wdata)
     ) ;
 
-    assign regfile_wen_r = (instruction_complete == 1'b1) ? regfile_wen : 1'b0 ;
+    assign regfile_wen_pulse = buffer_write || (regfile_wen && (next_ifidex_state == ReqInstr) && (instr_group != group_I_load)) ;
+    
+    /*
+    writeback_buffer_valid ? buffer_write :
+        (instr_group inside {group_UJ, group_RI_nonload}) ? ifidex_complete :
+        1'b0 
+    ;
+    */
 
 endmodule : stall4mem_pip_core
 
