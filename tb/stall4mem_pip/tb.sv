@@ -81,7 +81,6 @@ module tb # (
         if ((dut.opcode_e == SW) && (dut.rs2_data == 32'hdeadbeef)) begin
             deadbeef_written = 1'b1 ; 
             $display("[TB] 0xdeadbeef - test completed!", $time);
-            @(posedge dmem_write) ;
             @(posedge dmem_ready) ;
             $writememh("res_dmem.hex", i_dmem.mem_array, 0, DMEM_DEPTH) ;
             $finish;
