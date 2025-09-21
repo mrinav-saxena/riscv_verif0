@@ -39,7 +39,6 @@ module stall4mem_pip_core #(
     assign opcode_e = instr_enum_from_val (instr_forwarded) ;
     assign instr_type = instr_type_enum_from_instr (opcode_e) ;
 
-    typedef enum {ReqInstr, Wait4Instr, StallInstr} ifidex_state_e ;
     ifidex_state_e curr_ifidex_state, next_ifidex_state ;
     logic stall_ifidex ;
 
@@ -59,7 +58,6 @@ module stall4mem_pip_core #(
         end
     end
 
-    typedef enum {group_UJ, group_B, group_RI_nonload, group_I_load, group_S, group_UNKNOWN} instr_group_e ;
     instr_group_e instr_group ;
 
     assign instr_group = 
@@ -199,7 +197,6 @@ module stall4mem_pip_core #(
         .ltu_o(alu_ltu)
     ) ;
 
-    typedef enum {Idle, Wait4DataWrite, Wait4ReadData} dmem_state_e ;
     dmem_state_e curr_dmem_state, next_dmem_state ;
 
     always @(posedge clk or negedge rst_n) begin
