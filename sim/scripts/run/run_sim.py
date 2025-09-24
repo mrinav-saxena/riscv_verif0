@@ -115,7 +115,7 @@ def main():
         "--exe", str((tb_path / "sim_main.cpp").resolve().as_posix()),  # Convert to forward slashes and resolve
         "--Mdir", str(build_dir),  # Use absolute path
         "-f", str(flist_path),  # Include file list
-        "-O3", "-Wno-fatal", "--top-module", "tb",  # Force tb as top-level module
+        "-O3", "-Wno-fatal", "--top-module", args.top,  # Use the specified top-level module
         "-CFLAGS", "-IC:/msys64/mingw64/include -DWIN32 -D_WIN32 -D__MINGW64__",
         "-LDFLAGS", "-LC:/msys64/mingw64/lib -lz"
     ]
