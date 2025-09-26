@@ -13,6 +13,7 @@
 ./rtl/core/common/regfile.sv
 ./rtl/core/common/writeback_logic.sv
 
+./rtl/core/multi_cycle/stall4mem_pip/enums.sv
 ./rtl/core/multi_cycle/stall4mem_pip/stall4mem_pip_core.sv
 
 ./rtl/mem/zerolat/mem_zerolat.sv
