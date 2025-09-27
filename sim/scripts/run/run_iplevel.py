@@ -39,10 +39,10 @@ def main():
         print(f"sim_main.cpp not found in TB directory: {sim_main_cpp}", file=sys.stderr)
         sys.exit(1)
 
-    # Create run directory: ip_level/<tb_dir_name>
+    # Create run directory: sim/runs/ip_level/<tb_dir_name>
     tb_dirname = tb_path.name  # Gets the last directory name from the path
     run_dir_name = tb_dirname
-    run_dir_path = Path("runs/ip_level") / run_dir_name
+    run_dir_path = Path("sim/runs/ip_level") / run_dir_name
     
     # Create the run directory if it doesn't exist
     run_dir_path.mkdir(parents=True, exist_ok=True)
@@ -149,3 +149,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
