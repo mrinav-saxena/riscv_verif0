@@ -1,10 +1,13 @@
 .gitignore
 **/golden_dmem.*
 __pycache__
+sim/build/ip_level/*/*
+!sim/build/ip_level/*/*.exe
 sim/build/*/*
 !sim/build/*/*.exe
 sim/images/*/*.bin
 sim/images/*/*.elf
 sim/images/*/*.s
+sim/runs/ip_level/*/*.log
 sim/runs/*/*.log
 sim/runs/*/*.s
