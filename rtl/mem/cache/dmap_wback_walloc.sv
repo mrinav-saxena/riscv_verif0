@@ -34,12 +34,18 @@ module dmap_wback_walloc #(
     logic [ADDR_WIDTH-1:$clog2(DEPTH)+2] tag [DEPTH-1:0]  ;
     logic [DATA_WIDTH-1:0] mem_array [DEPTH-1:0] ;
 
-    logic [$clog2(DEPTH)+1:2] index ;
+    logic [$clog2(DEPTH)-1:0] index ;
     logic cache_hit ;
     logic perform_write ;
 
     assign index = core_addr_i[$clog2(DEPTH)+1:2] ;
     assign cache_hit = (core_addr_i[ADDR_WIDTH-1:$clog2(DEPTH)+2] == tag[index]) && (valid[index]) ;
+
+    logic [ADDR_WIDTH-1:$clog2(DEPTH)+2] latched_core_tag ;
+    logic [$clog2(DEPTH)-1:0] latched_core_index ;
+    logic [DATA_WIDTH-1:0] latched_core_wdata ;
+    logic [DATA_WIDTH/8-1:0] latched_core_wstrb ;
+    logic latched_core_write ;
 
     logic [ADDR_WIDTH-1:0] writeback_buffer_addr ;
     logic [DATA_WIDTH-1:0] writeback_buffer_wdata ;
@@ -52,6 +58,49 @@ module dmap_wback_walloc #(
     typedef enum {WBReady, Wait4WB} wb_state_e ;
     wb_state_e curr_wb_state, next_wb_state ;
 
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            curr_cache_state <= CacheReady ;
+            curr_wb_state <= WBReady ;
+        end else begin
+            curr_cache_state <= next_cache_state ;
+            curr_wb_state <= next_wb_state ;
+            if ((core_write_i == 1'b1) && (cache_hit == 1'b0)) begin
+                latched_core_tag = core_addr_i[ADDR_WIDTH-1:$clog2(DEPTH)+2] ;
+                latched_core_index = index ;
+                latched_core_wdata = core_wdata_i ;
+                latched_core_wstrb = core_wstrb_i ;
+                latched_core_write = core_write_i ;
+            end
+            if (perform_write == 1'b1) begin
+                if (cache_hit == 1'b1) begin
+                    // valid must already be set
+                    dirty[latched_core_index] = 1'b1 ;
+                    tag[index] = core_addr_i[ADDR_WIDTH-1:$clog2(DEPTH)+2] ;
+                    for (int j_byte = 0; j_byte < DATA_WIDTH/8; j_byte++) begin
+                        if (core_wstrb_i[j_byte]) begin
+                            mem_array[latched_core_index][j_byte*8 +: 8] <= core_wdata_i[j_byte*8 +: 8] ;
+                        end // else nothing
+                    end
+                end else begin
+                    valid[latched_core_index] = 1'b1 ;
+                    dirty[latched_core_index] = 1'b1 ;
+                    tag[latched_core_index] = latched_core_tag ;
+                    for (int j_byte = 0; j_byte < DATA_WIDTH/8; j_byte++) begin
+                        if (latched_core_wstrb[j_byte]) begin
+                            mem_array[latched_core_index][j_byte*8 +: 8] <= latched_core_wdata[j_byte*8 +: 8] ;
+                        end else begin
+                            mem_array[latched_core_index][j_byte*8 +: 8] <= dmem_rdata_i[j_byte*8 +: 8] ;
+                        end
+                    end
+                end
+            end
+            if (writeback_buffer_valid_next == 1'b1) begin
+                // 
+            end
+        end
+    end
+
     always @(*) begin
 
         next_cache_state = curr_cache_state ;
@@ -63,7 +112,7 @@ module dmap_wback_walloc #(
         core_ready_o = 1'b0 ;
         core_rdata_o = 'h0 ;
 
-        dmem_addr_o = 1'b0 ;
+        dmem_addr_o = 'h0 ;
         dmem_wdata_o = 'h0 ;
         dmem_wstrb_o = 'h0 ;
         dmem_read_o = 1'b0 ;
@@ -75,6 +124,7 @@ module dmap_wback_walloc #(
                     if (cache_hit == 1'b1) begin
                         next_cache_state = CacheReady ;
                         perform_write = 1'b1 ;
+                        core_ready_o = 1'b1 ;
                     end else begin
                         if (dirty[index] == 1'b1) begin
                             if (curr_wb_state == WBReady) begin
@@ -99,7 +149,9 @@ module dmap_wback_walloc #(
             end
             Wait4WriteData : begin
                 if (dmem_ready_i == 1'b1) begin
+                    // need to refine bw WMF and WMD
                     next_cache_state = CacheReady ;
+                    core_ready_o = 1'b1 ;
                     perform_write = 1'b1 ;
                 end
             end
@@ -135,15 +187,6 @@ module dmap_wback_walloc #(
 
     end
 
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            curr_cache_state <= CacheReady ;
-            curr_wb_state <= WBReady ;
-        end else begin
-            curr_cache_state <= next_cache_state ;
-            curr_wb_state <= next_wb_state ;
-        end
-    end
 
 endmodule : dmap_wback_walloc
 

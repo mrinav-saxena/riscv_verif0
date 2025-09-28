@@ -6,17 +6,25 @@ vluint64_t main_time = 0;
 double sc_time_stamp() { return main_time; }
 
 static void tick(Vtb* top, VerilatedFstC* tfp) {
+
     // Clock LOW for 500ps
     top->clk = 0;
-    top->eval();
-    if (tfp) tfp->dump(main_time);
+    
+    for (int j = 0; j < 5 ; j++) {
+        main_time+= 100 ;
+        top->eval();
+        if(tfp) tfp->dump(main_time);
+    }
     
     // Clock HIGH for 500ps  
     top->clk = 1;
-    top->eval();
-    if (tfp) tfp->dump(main_time + 500);
-    
-    main_time += 1000;  // Total cycle time: 1000ps
+
+    for (int j = 0; j < 5 ; j++) {
+        main_time+= 100 ;
+        top->eval();
+        if(tfp) tfp->dump(main_time);
+    }
+
 }
 
 int main(int argc, char** argv) {
@@ -40,8 +48,7 @@ int main(int argc, char** argv) {
     if (tfp) tfp->dump(main_time);
     main_time += 1000;
     
-    // run N cycles
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 50 ; ++i) {
         tick(top, tfp);
         if (Verilated::gotFinish()) {
             break ;

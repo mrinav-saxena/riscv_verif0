@@ -1,7 +1,8 @@
 module tb # (
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32,
-    parameter int DMEM_DEPTH = 1024
+    parameter int DMEM_DEPTH = 1024,
+    parameter int CACHE_DEPTH = 4
 ) (
     input logic clk,
     input logic rst_n
@@ -50,7 +51,7 @@ module tb # (
     dmap_wback_walloc #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
-        .DEPTH(DMEM_DEPTH)
+        .DEPTH(CACHE_DEPTH)
     ) i_dcache (
         .clk    (clk),
         .rst_n  (rst_n),
@@ -75,6 +76,20 @@ module tb # (
         cycle_count ++ ;
     end
 
+    integer cache_mem_fh ;
+
+    initial begin
+        /*
+        cache_mem_fh = $fopen("cache_mem.hex", "w");
+        if (cache_mem_fh == 0) begin
+            $display("[TB] Failed to open cache_mem.hex");
+            $finish;
+        end else begin
+            $fdisplay(cache_mem_fh, "// Cache memory!");
+        end
+        $fclose(cache_mem_fh);
+        */
+    end
 
     initial begin
 
@@ -91,22 +106,41 @@ module tb # (
         core_read = 1'b0 ;
         cleanup = 1'b0 ;
 
-        #4ns ;
+        repeat (4) @(negedge clk) ;
+        // #200ps ;
 
         core_write = 1'b1 ;
-        #1ns ;
+        @(negedge clk) ;
         core_write = 1'b0 ;
 
-        #15ns ;
+        repeat (8) @(negedge clk) ;
+        repeat (2) @(negedge clk) ;
 
         core_wdata = 32'h5a5a5a5a ;
+        core_wstrb = 4'h6;
         core_write = 1'b1 ;
-        #1ns ;
+        @(negedge clk) ;
         core_write = 1'b0 ;
 
-        #15ns ;
+        repeat (15) @(negedge clk) ;
+        
+        for (int i = 0; i < CACHE_DEPTH; i++) begin
+            if (i == 0) begin
+                cache_mem_fh = $fopen("cache_mem.hex", "w");
+                if (cache_mem_fh == 0) begin
+                    $display("[TB] Failed to open cache_mem.hex");
+                    $finish;
+                end else begin
+                    $fdisplay(cache_mem_fh, "// Cache memory!");
+                end
+            end
+            $fdisplay(cache_mem_fh, "index[%0d] : tag = %h ; data = 0x%h ; valid = %b ; dirty = %b", i, i_dcache.tag[i], i_dcache.mem_array[i], i_dcache.valid[i], i_dcache.dirty[i]);
+        end
+        $fclose(cache_mem_fh);
+        // $writememh("cache_mem.hex", i_dcache.mem_array, 0, CACHE_DEPTH) ;
 
         $finish;
+
 
     end
 

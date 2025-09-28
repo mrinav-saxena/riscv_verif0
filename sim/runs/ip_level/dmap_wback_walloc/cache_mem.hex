@@ -1,0 +1,5 @@
+// Cache memory!
+index[0] : tag = 0000000 ; data = 0xa55a5aa5 ; valid = 1 ; dirty = 1
+index[1] : tag = 0000000 ; data = 0x00000000 ; valid = 0 ; dirty = 0
+index[2] : tag = 0000000 ; data = 0x00000000 ; valid = 0 ; dirty = 0
+index[3] : tag = 0000000 ; data = 0x00000000 ; valid = 0 ; dirty = 0
