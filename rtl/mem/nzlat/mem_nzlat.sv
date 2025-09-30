@@ -58,7 +58,7 @@ module mem_nzlat #(
             write_counter <= write_counter_next ;
 
             // capture latched inputs upon a write or read pulse (but not when busy)
-            if (curr_state == Idle) begin
+            if ((curr_state == Idle) || (curr_state == Ready)) begin
                 if (write == 1'b1) begin
                     latched_operation <= 1'b0 ;
                     latched_addr <= addr ;
@@ -137,7 +137,15 @@ module mem_nzlat #(
 
             Ready : begin
                 ready = 1'b1 ;
-                next_state = Idle ;
+                if (write == 1'b1) begin
+                    write_counter_next = $urandom_range(1, WRITE_LATENCY) ;
+                    next_state = WRITE_LATENCY != 0 ? ProcessingWdata : Ready ;
+                end else if (read == 1'b1) begin
+                    read_counter_next = $urandom_range(1, READ_LATENCY) ;
+                    next_state = READ_LATENCY != 0 ? GettingRdata : Ready ;
+                end else begin
+                    next_state = Idle ;
+                end
             end
 
         endcase

@@ -36,7 +36,7 @@ module dmap_wback_walloc #(
 
     logic [$clog2(DEPTH)-1:0] index ;
     logic cache_hit ;
-    logic perform_write ;
+    logic perform_cache_write ;
 
     assign index = core_addr_i[$clog2(DEPTH)+1:2] ;
     assign cache_hit = (core_addr_i[ADDR_WIDTH-1:$clog2(DEPTH)+2] == tag[index]) && (valid[index]) ;
@@ -72,7 +72,7 @@ module dmap_wback_walloc #(
                 latched_core_wstrb = core_wstrb_i ;
                 latched_core_write = core_write_i ;
             end
-            if (perform_write == 1'b1) begin
+            if (perform_cache_write == 1'b1) begin
                 if (cache_hit == 1'b1) begin
                     // valid must already be set
                     dirty[latched_core_index] = 1'b1 ;
@@ -95,8 +95,17 @@ module dmap_wback_walloc #(
                     end
                 end
             end
-            if (writeback_buffer_valid_next == 1'b1) begin
-                // 
+            if ((writeback_buffer_valid_next == 1'b1) && (writeback_buffer_valid_r == 1'b0)) begin
+                writeback_buffer_valid_r = 1'b1 ;
+                writeback_buffer_addr = {tag[index], index, 2'b00} ;        // note : block size is fixed to 1 word
+                writeback_buffer_wdata = mem_array[index] ;
+                writeback_buffer_wstrb = 'hf ;
+            end
+            if ((writeback_buffer_valid_next == 1'b0) && (writeback_buffer_valid_r == 1'b1)) begin
+                writeback_buffer_valid_r = 1'b0 ;
+                writeback_buffer_addr = 'h0 ;
+                writeback_buffer_wdata = 'h0 ;
+                writeback_buffer_wstrb = 'h0 ;
             end
         end
     end
@@ -106,7 +115,7 @@ module dmap_wback_walloc #(
         next_cache_state = curr_cache_state ;
         next_wb_state = curr_wb_state ;
 
-        perform_write = 1'b0 ;
+        perform_cache_write = 1'b0 ;
         writeback_buffer_valid_next = writeback_buffer_valid_r ;
 
         core_ready_o = 1'b0 ;
@@ -123,7 +132,7 @@ module dmap_wback_walloc #(
                 if (core_write_i == 1'b1) begin
                     if (cache_hit == 1'b1) begin
                         next_cache_state = CacheReady ;
-                        perform_write = 1'b1 ;
+                        perform_cache_write = 1'b1 ;
                         core_ready_o = 1'b1 ;
                     end else begin
                         if (dirty[index] == 1'b1) begin
@@ -152,7 +161,7 @@ module dmap_wback_walloc #(
                     // need to refine bw WMF and WMD
                     next_cache_state = CacheReady ;
                     core_ready_o = 1'b1 ;
-                    perform_write = 1'b1 ;
+                    perform_cache_write = 1'b1 ;
                 end
             end
             Stall4WB : begin
@@ -167,20 +176,17 @@ module dmap_wback_walloc #(
 
         case (curr_wb_state)
             WBReady : begin
-                if (writeback_buffer_valid_r == 1'b1) begin
-                    if (curr_cache_state == CacheReady) begin
-                        next_wb_state = Wait4WB ;
-                        dmem_addr_o = writeback_buffer_addr ;
-                        dmem_wdata_o = writeback_buffer_wdata ;
-                        dmem_wstrb_o = writeback_buffer_wstrb ;
-                        dmem_write_o = 1'b1 ;
-                    end
+                if ((writeback_buffer_valid_r == 1'b1) && (dmem_ready_i == 1'b1)) begin
+                    next_wb_state = Wait4WB ;
+                    dmem_addr_o = writeback_buffer_addr ;
+                    dmem_wdata_o = writeback_buffer_wdata ;
+                    dmem_wstrb_o = writeback_buffer_wstrb ;
+                    dmem_write_o = 1'b1 ;
                 end
             end
             Wait4WB : begin
                 if (dmem_ready_i == 1'b1) begin
                     next_wb_state = WBReady ;
-                    writeback_buffer_valid_next = 1'b0 ;
                 end
             end
         endcase

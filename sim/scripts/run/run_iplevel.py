@@ -53,7 +53,7 @@ def main():
     print("Starting Verilator simulation...")
     
     # Create build directory for intermediate files
-    build_dir = Path("build/ip_level") / run_dir_name
+    build_dir = Path("sim/build/ip_level") / run_dir_name
     build_dir.mkdir(parents=True, exist_ok=True)
     print(f"Created build directory: {build_dir}")
     
@@ -64,10 +64,10 @@ def main():
     # Build verilator command with proper include paths (relative to root directory)
     verilator_cmd = [
         "verilator_bin", "-Wall", "--trace", "--trace-fst", "--trace-depth", "4", "--timing",
+        "-f", str(flist_path),  # Include file list
         "--cc", str(tb_sv.resolve().as_posix()),  # Convert to forward slashes
         "--exe", str(sim_main_cpp.resolve().as_posix()),  # Convert to forward slashes and resolve
         "--Mdir", str(build_dir),  # Use absolute path
-        "-f", str(flist_path),  # Include file list
         "-O3", "-Wno-fatal", "--top-module", args.top_module,  # Use the specified top-level module
         "-CFLAGS", "-IC:/msys64/mingw64/include -DWIN32 -D_WIN32 -D__MINGW64__",
         "-LDFLAGS", "-LC:/msys64/mingw64/lib -lz"
@@ -124,10 +124,6 @@ def main():
     print("Running simulation...", flush=True)
     sim_cmd = str((build_dir/'VTb.exe').resolve().as_posix())  # Convert to forward slashes
     
-    # Log simulation command to file
-    sim_log_path = run_dir_path / "run_sim.log"
-    print(f"Simulation output will be logged to {sim_log_path}", flush=True)
-    
     # Debug output for simulation
     if args.debug:
         print(f"\n=== SIMULATION DEBUG ===", flush=True)
@@ -141,9 +137,15 @@ def main():
         print(f"=== END SIMULATION DEBUG ===\n", flush=True)
     
     # Run simulation from the run directory
-    if os.system(f"cd {run_dir_path.as_posix()} && {sim_cmd}") != 0:
-        print("Simulation failed", file=sys.stderr)
-        sys.exit(1)
+    sim_log_path = run_dir_path / "run_sim.log"
+    print(f"Simulation output will be logged to {sim_log_path}", flush=True)
+    
+    # Change to run directory and run simulation with logging
+    original_cwd = os.getcwd()
+    os.chdir(run_dir_path.as_posix())
+    # Use relative path since we're now in the run directory
+    run_with_logging(sim_cmd, "run_sim.log", "Simulation")
+    os.chdir(original_cwd)  # Return to original directory
     
     print("========== SIMULATION COMPLETE! =================\n", flush=True)
 

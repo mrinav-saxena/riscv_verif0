@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     if (tfp) tfp->dump(main_time);
     main_time += 1000;
     
-    for (int i = 0; i < 50 ; ++i) {
+    for (int i = 0; i < 200 ; ++i) {
         tick(top, tfp);
         if (Verilated::gotFinish()) {
             break ;

@@ -11,3 +11,4 @@ sim/images/*/*.s
 sim/runs/ip_level/*/*.log
 sim/runs/*/*.log
 sim/runs/*/*.s
+env/*/*

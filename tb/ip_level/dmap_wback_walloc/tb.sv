@@ -1,8 +1,8 @@
 module tb # (
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32,
-    parameter int DMEM_DEPTH = 1024,
-    parameter int CACHE_DEPTH = 4
+    parameter int CACHE_DEPTH = 32,
+    parameter int DMEM_DEPTH = 32
 ) (
     input logic clk,
     input logic rst_n
@@ -79,50 +79,39 @@ module tb # (
     integer cache_mem_fh ;
 
     initial begin
-        /*
-        cache_mem_fh = $fopen("cache_mem.hex", "w");
-        if (cache_mem_fh == 0) begin
-            $display("[TB] Failed to open cache_mem.hex");
-            $finish;
-        end else begin
-            $fdisplay(cache_mem_fh, "// Cache memory!");
-        end
-        $fclose(cache_mem_fh);
-        */
+        // cache_base_test_inst = new (cache_core_if_inst) ;
+        @(posedge clk) ;
+        // cache_base_test_inst.run() ;
     end
 
     initial begin
 
         cycle_count = 0 ;
-        tc_addr[0] = 32'h00000000;
-        tc_addr[1] = 32'h01000000;
-        tc_addr[2] = 32'h00000004;
-        tc_addr[3] = 32'h01000004;
+        tc_addr[0] = 32'h00000004;
+        tc_addr[1] = 32'h00000014;
+        tc_addr[2] = 32'h00000008;
+        tc_addr[3] = 32'h00000018;
 
-        core_addr = tc_addr[0];
-        core_wdata = 32'ha5a5a5a5;
         core_write = 1'b0 ;
-        core_wstrb = 4'hf;
         core_read = 1'b0 ;
         cleanup = 1'b0 ;
 
-        repeat (4) @(negedge clk) ;
-        // #200ps ;
+        wait_n_cycles(6);
 
-        core_write = 1'b1 ;
-        @(negedge clk) ;
-        core_write = 1'b0 ;
+        write_req(tc_addr[0], 32'ha5a5a5a5, 4'hf);
+        wait_n_cycles(6);
 
-        repeat (8) @(negedge clk) ;
-        repeat (2) @(negedge clk) ;
+        write_req(tc_addr[0], 32'h5a5a5a5a, 4'h6);
+        wait_n_cycles(6);
 
-        core_wdata = 32'h5a5a5a5a ;
-        core_wstrb = 4'h6;
-        core_write = 1'b1 ;
-        @(negedge clk) ;
-        core_write = 1'b0 ;
+        write_req(tc_addr[1], 32'h0f0f0f0f, 4'hf);
+        wait_n_cycles(6);
 
-        repeat (15) @(negedge clk) ;
+        write_req(tc_addr[2], 32'h08080808, 4'hf);
+        wait_n_cycles(6);
+
+        write_req(tc_addr[0], 32'h44444444, 4'hf);
+        wait_n_cycles(6);
         
         for (int i = 0; i < CACHE_DEPTH; i++) begin
             if (i == 0) begin
@@ -134,15 +123,36 @@ module tb # (
                     $fdisplay(cache_mem_fh, "// Cache memory!");
                 end
             end
-            $fdisplay(cache_mem_fh, "index[%0d] : tag = %h ; data = 0x%h ; valid = %b ; dirty = %b", i, i_dcache.tag[i], i_dcache.mem_array[i], i_dcache.valid[i], i_dcache.dirty[i]);
+            $fdisplay(cache_mem_fh, "index[0x%h] : tag = 0x%h ; data = 0x%h ; valid = %b ; dirty = %b", i[$clog2(CACHE_DEPTH)-1:0], i_dcache.tag[i], i_dcache.mem_array[i], i_dcache.valid[i], i_dcache.dirty[i]);
         end
         $fclose(cache_mem_fh);
-        // $writememh("cache_mem.hex", i_dcache.mem_array, 0, CACHE_DEPTH) ;
+        $writememh("res_dmem.hex", i_dmem.mem_array, 0, DMEM_DEPTH) ;
 
         $finish;
 
-
     end
+
+    task write_req (input bit [ADDR_WIDTH-1:0] addr0, input bit [DATA_WIDTH-1:0] wdata0, input bit [DATA_WIDTH/8-1:0] wstrb0) ;
+
+        core_addr = addr0;
+        core_wdata = wdata0;
+        core_wstrb = wstrb0;
+        core_write = 1'b1;
+        core_read = 1'b0;
+        @(negedge clk) ;
+
+        core_addr = 'h0;
+        core_wdata = 'h0;
+        core_wstrb = 'h0;
+        core_write = 1'b0;
+        core_read = 1'b0;
+        wait(core_ready == 1'b1) ;
+
+    endtask : write_req
+
+    task wait_n_cycles (input integer n) ;
+        repeat (n) @(negedge clk) ;
+    endtask : wait_n_cycles
 
 endmodule
 

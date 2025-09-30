@@ -5,3 +5,5 @@
 
 ./rtl/mem/nzlat/mem_nzlat.sv
 ./rtl/mem/cache/dmap_wback_walloc.sv
+
+./tb/ip_level/dmap_wback_walloc/cache_if.sv
