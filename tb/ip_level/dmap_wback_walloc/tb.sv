@@ -1,8 +1,8 @@
 module tb # (
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32,
-    parameter int CACHE_DEPTH = 32,
-    parameter int DMEM_DEPTH = 32
+    parameter int CACHE_DEPTH = 4,
+    parameter int DMEM_DEPTH = 1024
 ) (
     input logic clk,
     input logic rst_n
@@ -101,18 +101,18 @@ module tb # (
         write_req(tc_addr[0], 32'ha5a5a5a5, 4'hf);
         wait_n_cycles(6);
 
-        write_req(tc_addr[0], 32'h5a5a5a5a, 4'h6);
+        write_req(tc_addr[0], 32'h5a5a5a5a, 4'h1);
         wait_n_cycles(6);
 
         write_req(tc_addr[1], 32'h0f0f0f0f, 4'hf);
         wait_n_cycles(6);
 
-        write_req(tc_addr[2], 32'h08080808, 4'hf);
-        wait_n_cycles(6);
-
-        write_req(tc_addr[0], 32'h44444444, 4'hf);
+        write_req(tc_addr[0], 32'h44444444, 4'h2);
         wait_n_cycles(6);
         
+        write_req(tc_addr[1], 32'h08080808, 4'hf);
+        wait_n_cycles(6);
+
         for (int i = 0; i < CACHE_DEPTH; i++) begin
             if (i == 0) begin
                 cache_mem_fh = $fopen("cache_mem.hex", "w");
