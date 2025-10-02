@@ -158,19 +158,27 @@ module dmap_wback_walloc #(
             end
             Wait4WriteData : begin
                 if (dmem_ready_i == 1'b1) begin
-                    // need to refine bw WMF and WMD
-                    next_cache_state = CacheReady ;
+                    if (writeback_buffer_valid_r == 1'b1) begin
+                        next_cache_state = Stall4WB ;
+                    end else begin
+                        next_cache_state = CacheReady ;
+                    end
                     core_ready_o = 1'b1 ;
                     perform_cache_write = 1'b1 ;
                 end
             end
             Stall4WB : begin
+                if (dmem_ready_i == 1'b1) begin
+                    next_cache_state = CacheReady ;
+                end
+                /*
                 if (curr_wb_state == WBReady) begin
                     next_cache_state = Wait4WriteData ;
                     writeback_buffer_valid_next = 1'b1 ;
                     dmem_addr_o = core_addr_i ;
                     dmem_read_o = 1'b1 ;
                 end
+                */
             end
         endcase
 

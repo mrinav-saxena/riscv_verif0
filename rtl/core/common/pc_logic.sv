@@ -16,24 +16,24 @@ module pc_logic #(parameter int ADDR_WIDTH = 32, DATA_WIDTH = 32) (
 
 ) ;
 
+    logic branch_taken;
+
     assign pc_next_o = pc_i + 'd4 ;
+    assign branch_taken = 
+        ((opcode_i == BEQ) && (alu_eq_i == 1'b1)) ||
+        ((opcode_i == BNE) && (alu_eq_i == 1'b0)) ||
+        ((opcode_i == BLT) && (alu_lt_i == 1'b1)) ||
+        ((opcode_i == BGE) && (alu_lt_i == 1'b0)) ||
+        ((opcode_i == BLTU) && (alu_ltu_i == 1'b1)) ||
+        ((opcode_i == BGEU) && (alu_ltu_i == 1'b0))
+    ;
 
     always @(*) begin
         if (opcode_i == JAL) begin
             pc_final_o = pc_i + imm_value_i;
         end else if (opcode_i == JALR) begin
             pc_final_o = alu_result_i;
-        end else if ((opcode_i == BEQ) && (alu_eq_i == 1'b1)) begin
-            pc_final_o = pc_i + imm_value_i;
-        end else if ((opcode_i == BNE) && (alu_eq_i == 1'b0)) begin
-            pc_final_o = pc_i + imm_value_i;
-        end else if ((opcode_i == BLT) && (alu_lt_i == 1'b1)) begin
-            pc_final_o = pc_i + imm_value_i;
-        end else if ((opcode_i == BGE) && (alu_lt_i == 1'b0)) begin
-            pc_final_o = pc_i + imm_value_i;
-        end else if ((opcode_i == BLTU) && (alu_ltu_i == 1'b1)) begin
-            pc_final_o = pc_i + imm_value_i;
-        end else if ((opcode_i == BGEU) && (alu_ltu_i == 1'b0)) begin
+        end else if (branch_taken) begin
             pc_final_o = pc_i + imm_value_i;
         end else begin
             pc_final_o = pc_next_o;

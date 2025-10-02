@@ -80,6 +80,8 @@ module tb # (
             end
         end
     end
+
+    integer pc_seq_fh ;
   
     // Load instruction memory and data memory from HEX files
     initial begin
@@ -88,6 +90,32 @@ module tb # (
         $readmemh("imem.hex", i_imem.mem_array);
         $readmemh("dmem.hex", i_dmem.mem_array);
         $display("[TB] Loaded imem.hex and dmem.hex");
+        pc_seq_fh = $fopen ("pc_seq.hex", "w");
+        if (pc_seq_fh == 0) begin
+            $display("[TB] Failed to open pc_seq.hex");
+            $finish;
+        end
+        $fdisplay(pc_seq_fh, "// PC sequence! - sanity");
+        $fclose(pc_seq_fh);
+    end
+
+    always @(posedge clk) begin
+        pc_seq_fh = $fopen("pc_seq.hex", "a");
+        if (pc_seq_fh == 0) begin
+            $display("[TB] Failed to open pc_seq.hex");
+            $finish;
+        end
+        if (dut.instr_type == B) begin
+            $fwrite(pc_seq_fh, "0x%h B ", dut.pc);
+            if (dut.pc_logic_inst.branch_taken == 1'b1) begin
+                $fdisplay(pc_seq_fh, "1");
+            end else begin
+                $fdisplay(pc_seq_fh, "0");
+            end
+        end else begin
+            $fdisplay(pc_seq_fh, "0x%h", dut.pc);
+        end
+        $fclose(pc_seq_fh);
     end
 
 endmodule
