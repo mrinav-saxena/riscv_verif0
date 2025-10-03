@@ -29,7 +29,7 @@ module regfile #(parameter int DATA_WIDTH = 32, parameter int N_REGS = 32) (
     endgenerate
 
     // write logic
-    always @(posedge clk) begin
+    always @(posedge clk or negedge rst_n) begin
         if (rst_n == 1'b1) begin
             if (wen_i && (rd_i != 5'b0)) begin
                 regs[rd_i] <= wdata_i ;

@@ -74,7 +74,7 @@ module tb # (
             $finish;
         end else begin
             cycle_count ++ ;
-            if (cycle_count % 100 == 0) begin
+            if (cycle_count % 2500 == 0) begin
                 $display("[TB] cycle_count is %0d. writing memory for debug purposes.", cycle_count);
                 $writememh("res_dmem.hex", i_dmem.mem_array, 0, DMEM_DEPTH) ;
             end

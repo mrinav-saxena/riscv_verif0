@@ -188,6 +188,37 @@ def main():
         print(f"=== END SIMULATION DEBUG ===\n", flush=True)
     
     # Run simulation from the run directory so it can find the hex files
+    # sim_log_path = run_dir_path / "run_sim.log"
+    # print(f"Simulation output will be logged to {sim_log_path}")
+    
+    # # Run simulation with logging
+    # with open(sim_log_path, 'w') as log_file:
+    #     log_file.write("=== COMMAND ===\n")
+    #     log_file.write(f"cd {run_dir_path.as_posix()} && {sim_cmd}\n\n")
+    #     log_file.flush()  # Ensure command is written before running
+        
+    #     # Run the command and capture output
+    #     result = subprocess.run(
+    #         f"cd {run_dir_path.as_posix()} && {sim_cmd}",
+    #         shell=True,
+    #         capture_output=True,
+    #         text=True,
+    #         cwd=run_dir_path  # Set working directory explicitly
+    #     )
+        
+    #     log_file.write("=== STDOUT ===\n")
+    #     log_file.write(result.stdout)
+    #     log_file.write("\n=== STDERR ===\n")
+    #     log_file.write(result.stderr)
+    #     log_file.write(f"\n=== RETURN CODE: {result.returncode} ===\n")
+    #     log_file.flush()  # Ensure all output is written
+    
+    # if result.returncode != 0:
+    #     print("Simulation failed! Check log file:", sim_log_path, file=sys.stderr)
+    #     print("STDOUT:", result.stdout)
+    #     print("STDERR:", result.stderr)
+    #     sys.exit(1)
+    
     if os.system(f"cd {run_dir_path.as_posix()} && {sim_cmd}") != 0:
         print("Simulation failed", file=sys.stderr)
         sys.exit(1)
