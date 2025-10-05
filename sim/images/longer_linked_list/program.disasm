@@ -29,14 +29,14 @@ Disassembly of section .text:
   44:	100007b7          	lui	a5,0x10000
   48:	28478793          	addi	a5,a5,644 # 10000284 <all_available_nodes>
   4c:	00200713          	addi	a4,zero,2
-  50:	1ee78e23          	sb	a4,508(a5)
+  50:	3ae78e23          	sb	a4,956(a5)
   54:	100007b7          	lui	a5,0x10000
   58:	28478793          	addi	a5,a5,644 # 10000284 <all_available_nodes>
   5c:	fff00713          	addi	a4,zero,-1
-  60:	1ee79f23          	sh	a4,510(a5)
+  60:	3ae79f23          	sh	a4,958(a5)
   64:	100007b7          	lui	a5,0x10000
   68:	28478793          	addi	a5,a5,644 # 10000284 <all_available_nodes>
-  6c:	1e078ea3          	sb	zero,509(a5)
+  6c:	3a078ea3          	sb	zero,957(a5)
   70:	00000013          	addi	zero,zero,0
   74:	00c12083          	lw	ra,12(sp)
   78:	00812403          	lw	s0,8(sp)
@@ -71,7 +71,7 @@ Disassembly of section .text:
   e4:	00178793          	addi	a5,a5,1
   e8:	fef42623          	sw	a5,-20(s0)
   ec:	fec42703          	lw	a4,-20(s0)
-  f0:	07f00793          	addi	a5,zero,127
+  f0:	0ef00793          	addi	a5,zero,239
   f4:	fae7d4e3          	bge	a5,a4,9c <get_free_node+0x18>
   f8:	0ff00793          	addi	a5,zero,255
   fc:	00078513          	addi	a0,a5,0
@@ -541,35 +541,12 @@ Disassembly of section .text:
  814:	01f00793          	addi	a5,zero,31
  818:	fae7d0e3          	bge	a5,a4,7b8 <main+0x17c>
  81c:	100007b7          	lui	a5,0x10000
- 820:	2807c783          	lbu	a5,640(a5) # 10000280 <init_ll_head_ptr>
- 824:	00078513          	addi	a0,a5,0
- 828:	00000097          	auipc	ra,0x0
- 82c:	b88080e7          	jalr	ra,-1144(ra) # 3b0 <clear_list>
- 830:	100007b7          	lui	a5,0x10000
- 834:	28078793          	addi	a5,a5,640 # 10000280 <init_ll_head_ptr>
- 838:	0017c783          	lbu	a5,1(a5)
- 83c:	00078513          	addi	a0,a5,0
- 840:	00000097          	auipc	ra,0x0
- 844:	b70080e7          	jalr	ra,-1168(ra) # 3b0 <clear_list>
- 848:	100007b7          	lui	a5,0x10000
- 84c:	28078793          	addi	a5,a5,640 # 10000280 <init_ll_head_ptr>
- 850:	0027c783          	lbu	a5,2(a5)
- 854:	00078513          	addi	a0,a5,0
- 858:	00000097          	auipc	ra,0x0
- 85c:	b58080e7          	jalr	ra,-1192(ra) # 3b0 <clear_list>
- 860:	100007b7          	lui	a5,0x10000
- 864:	28078793          	addi	a5,a5,640 # 10000280 <init_ll_head_ptr>
- 868:	0037c783          	lbu	a5,3(a5)
- 86c:	00078513          	addi	a0,a5,0
- 870:	00000097          	auipc	ra,0x0
- 874:	b40080e7          	jalr	ra,-1216(ra) # 3b0 <clear_list>
- 878:	100007b7          	lui	a5,0x10000
- 87c:	deadc737          	lui	a4,0xdeadc
- 880:	eef70713          	addi	a4,a4,-273 # deadbeef <test_complete+0xceadba6b>
- 884:	48e7a223          	sw	a4,1156(a5) # 10000484 <test_complete>
- 888:	00000793          	addi	a5,zero,0
- 88c:	00078513          	addi	a0,a5,0
- 890:	01c12083          	lw	ra,28(sp)
- 894:	01812403          	lw	s0,24(sp)
- 898:	02010113          	addi	sp,sp,32
- 89c:	00008067          	jalr	zero,0(ra)
+ 820:	deadc737          	lui	a4,0xdeadc
+ 824:	eef70713          	addi	a4,a4,-273 # deadbeef <test_complete+0xceadb8ab>
+ 828:	64e7a223          	sw	a4,1604(a5) # 10000644 <test_complete>
+ 82c:	00000793          	addi	a5,zero,0
+ 830:	00078513          	addi	a0,a5,0
+ 834:	01c12083          	lw	ra,28(sp)
+ 838:	01812403          	lw	s0,24(sp)
+ 83c:	02010113          	addi	sp,sp,32
+ 840:	00008067          	jalr	zero,0(ra)

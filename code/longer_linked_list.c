@@ -12,7 +12,7 @@ typedef struct {
 #define NODE_STATUS_USED 1
 #define NODE_STATUS_RESERVED 2
 
-#define N_NODES 0x80
+#define N_NODES 0xf0
 
 node all_available_nodes [N_NODES] ;
 
@@ -155,11 +155,12 @@ int main (void) {
         add_ll_node (init_ll_head_ptr[random_add_sequence[i]], base_data[i]) ;
     }
 
+    
     // Remove 16 elements
     for (int i = 0; i < 16; i++) {
         remove_node_by_index (init_ll_head_ptr[random_remove_sequence[i]], remove_indices[i]) ;
     }
-
+    
     // Second phase: Add next 96 elements (96-191)
     for (int i = 96; i < 192; i++) {
         add_ll_node (init_ll_head_ptr[random_add_sequence[i]], base_data[i]) ;
@@ -170,11 +171,14 @@ int main (void) {
         remove_node_by_index (init_ll_head_ptr[random_remove_sequence[i]], remove_indices[i]) ;
     }
 
+    /*
+
     // Clear all four lists
     clear_list (init_ll_head_ptr[0]) ;
     clear_list (init_ll_head_ptr[1]) ;
     clear_list (init_ll_head_ptr[2]) ;
     clear_list (init_ll_head_ptr[3]) ;
+    */
 
     test_complete = 0xdeadbeef ;
     

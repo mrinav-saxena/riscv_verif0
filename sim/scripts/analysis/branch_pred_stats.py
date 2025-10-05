@@ -277,99 +277,121 @@ class BranchPredictor:
     def generate_csv_report(self, output_dir, code_name, scheme, counter_policy, n_cnt_bits, addr_bit_range, ghr_size, lhr_size):
         """Generate CSV report with branch prediction statistics."""
         import csv
+        import time
         
         # Create output directory if it doesn't exist
         create_directory_if_not_exists(output_dir)
         
         csv_file = os.path.join(output_dir, "branch_stats.csv")
         
-        with open(csv_file, 'w', newline='') as f:
-            writer = csv.writer(f)
-            
-            # Simulation parameters
-            writer.writerow(["Simulation Parameters"])
-            writer.writerow(["Parameter", "Value"])
-            writer.writerow(["Scheme", scheme])
-            writer.writerow(["Counter Policy", counter_policy])
-            writer.writerow(["Counter Bits", n_cnt_bits])
-            writer.writerow(["Address Bit Range", f"{addr_bit_range[0]}:{addr_bit_range[1]}"])
-            
-            # Show only relevant parameters based on scheme
-            if scheme in ["ghr", "gselect", "gshare"]:
-                writer.writerow(["GHR Size", ghr_size])
-            elif scheme == "lhr":
-                writer.writerow(["LHR Size", lhr_size])
-            elif scheme == "addr_index":
-                # No additional parameters needed for addr_index
-                pass
-            
-            writer.writerow([])
-            
-            # Overall statistics
-            predict_rate = (self.total_predicts / self.total_branches * 100) if self.total_branches > 0 else 0
-            n_unique_indices = len(self.unique_indices)
-            n_index_hits = self.index_hits
-            n_replacements = self.replacements
-            replacement_percentage = (n_replacements / self.total_branches * 100) if self.total_branches > 0 else 0
-            
-            # Write overall statistics
-            writer.writerow(["Overall Statistics"])
-            writer.writerow(["Metric", "Value", "Percentage", "Total"])
-            writer.writerow(["Total Branches", self.total_branches, "100.0%", self.total_branches])
-            writer.writerow(["Total Predicts", self.total_predicts, f"{predict_rate:.2f}%", self.total_predicts])
-            writer.writerow(["Total Mispredicts", self.total_branches - self.total_predicts, f"{100-predict_rate:.2f}%", self.total_branches - self.total_predicts])
-            writer.writerow(["Predict Rate", f"{predict_rate:.2f}%", "", ""])
-            writer.writerow([])
-            
-            # Index access statistics
-            writer.writerow(["Index Access Statistics"])
-            writer.writerow(["Metric", "Count", "Percentage", "Total"])
-            writer.writerow(["Unique Indices (n)", n_unique_indices, f"{(n_unique_indices/self.total_branches*100):.2f}%", n_unique_indices])
-            writer.writerow(["Index Hits (N)", n_index_hits, f"{(n_index_hits/self.total_branches*100):.2f}%", n_index_hits])
-            writer.writerow(["Replacements", n_replacements, f"{replacement_percentage:.2f}%", n_replacements])
-            writer.writerow([])
-            
-            # Per-index statistics
-            writer.writerow(["Per-Index Statistics"])
-            writer.writerow(["Index", "Total Branches", "Predicts", "Mispredicts", "Predict Rate", "Total Branches", "Total Predicts", "Total Mispredicts"])
-            
-            # Sort indices for consistent output
-            sorted_indices = sorted(self.index_stats.keys())
-            for index in sorted_indices:
-                stats = self.index_stats[index]
-                index_predict_rate = (stats['predicts'] / stats['total'] * 100) if stats['total'] > 0 else 0
-                writer.writerow([
-                    index,
-                    stats['total'],
-                    stats['predicts'],
-                    stats['mispredicts'],
-                    f"{index_predict_rate:.2f}%",
-                    stats['total'],
-                    stats['predicts'],
-                    stats['mispredicts']
-                ])
-            
-            # Iteration-by-iteration statistics
-            writer.writerow([])
-            writer.writerow(["Iteration-by-Iteration Statistics"])
-            writer.writerow(["Iteration", "Total Branches", "Total Predicts", "Total Mispredicts", "Predict Rate", "Unique Indices", "Index Hits", "Index", "Prediction", "Outcome", "Is Predict"])
-            
-            for stats in self.iteration_stats:
-                writer.writerow([
-                    stats['iteration'],
-                    stats['total_branches'],
-                    stats['total_predicts'],
-                    stats['total_mispredicts'],
-                    f"{stats['predict_rate']:.2f}%",
-                    stats['unique_indices'],
-                    stats['index_hits'],
-                    stats['index'],
-                    stats['prediction'],
-                    stats['outcome'],
-                    stats['is_predict']
-                ])
+        # Try to write the file with retry logic for permission issues
+        max_retries = 3
+        retry_delay = 1  # seconds
         
-        return csv_file
+        for attempt in range(max_retries):
+            try:
+                with open(csv_file, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    
+                    # Simulation parameters
+                    writer.writerow(["Simulation Parameters"])
+                    writer.writerow(["Parameter", "Value"])
+                    writer.writerow(["Scheme", scheme])
+                    writer.writerow(["Counter Policy", counter_policy])
+                    writer.writerow(["Counter Bits", n_cnt_bits])
+                    writer.writerow(["Address Bit Range", f"{addr_bit_range[0]}:{addr_bit_range[1]}"])
+                    
+                    # Show only relevant parameters based on scheme
+                    if scheme in ["ghr", "gselect", "gshare"]:
+                        writer.writerow(["GHR Size", ghr_size])
+                    elif scheme == "lhr":
+                        writer.writerow(["LHR Size", lhr_size])
+                    elif scheme == "addr_index":
+                        # No additional parameters needed for addr_index
+                        pass
+                    
+                    writer.writerow([])
+                    
+                    # Overall statistics
+                    predict_rate = (self.total_predicts / self.total_branches * 100) if self.total_branches > 0 else 0
+                    n_unique_indices = len(self.unique_indices)
+                    n_index_hits = self.index_hits
+                    n_replacements = self.replacements
+                    replacement_percentage = (n_replacements / self.total_branches * 100) if self.total_branches > 0 else 0
+                    
+                    # Write overall statistics
+                    writer.writerow(["Overall Statistics"])
+                    writer.writerow(["Metric", "Value", "Percentage", "Total"])
+                    writer.writerow(["Total Branches", self.total_branches, "100.0%", self.total_branches])
+                    writer.writerow(["Total Predicts", self.total_predicts, f"{predict_rate:.2f}%", self.total_predicts])
+                    writer.writerow(["Total Mispredicts", self.total_branches - self.total_predicts, f"{100-predict_rate:.2f}%", self.total_branches - self.total_predicts])
+                    writer.writerow(["Predict Rate", f"{predict_rate:.2f}%", "", ""])
+                    writer.writerow([])
+                    
+                    # Index access statistics
+                    writer.writerow(["Index Access Statistics"])
+                    writer.writerow(["Metric", "Count", "Percentage", "Total"])
+                    writer.writerow(["Unique Indices (n)", n_unique_indices, f"{(n_unique_indices/self.total_branches*100):.2f}%", n_unique_indices])
+                    writer.writerow(["Index Hits (N)", n_index_hits, f"{(n_index_hits/self.total_branches*100):.2f}%", n_index_hits])
+                    writer.writerow(["Replacements", n_replacements, f"{replacement_percentage:.2f}%", n_replacements])
+                    writer.writerow([])
+                    
+                    # Per-index statistics
+                    writer.writerow(["Per-Index Statistics"])
+                    writer.writerow(["Index", "Total Branches", "Predicts", "Mispredicts", "Predict Rate", "Total Branches", "Total Predicts", "Total Mispredicts"])
+                    
+                    # Sort indices for consistent output
+                    sorted_indices = sorted(self.index_stats.keys())
+                    for index in sorted_indices:
+                        stats = self.index_stats[index]
+                        index_predict_rate = (stats['predicts'] / stats['total'] * 100) if stats['total'] > 0 else 0
+                        writer.writerow([
+                            index,
+                            stats['total'],
+                            stats['predicts'],
+                            stats['mispredicts'],
+                            f"{index_predict_rate:.2f}%",
+                            stats['total'],
+                            stats['predicts'],
+                            stats['mispredicts']
+                        ])
+                    
+                    # Iteration-by-iteration statistics
+                    writer.writerow([])
+                    writer.writerow(["Iteration-by-Iteration Statistics"])
+                    writer.writerow(["Iteration", "Total Branches", "Total Predicts", "Total Mispredicts", "Predict Rate", "Unique Indices", "Index Hits", "Index", "Prediction", "Outcome", "Is Predict"])
+                    
+                    for stats in self.iteration_stats:
+                        writer.writerow([
+                            stats['iteration'],
+                            stats['total_branches'],
+                            stats['total_predicts'],
+                            stats['total_mispredicts'],
+                            f"{stats['predict_rate']:.2f}%",
+                            stats['unique_indices'],
+                            stats['index_hits'],
+                            stats['index'],
+                            stats['prediction'],
+                            stats['outcome'],
+                            stats['is_predict']
+                        ])
+                
+                # If we get here, the file was written successfully
+                return csv_file
+                
+            except PermissionError as e:
+                if attempt < max_retries - 1:
+                    print(f"Permission denied writing to {csv_file}. Retrying in {retry_delay} seconds... (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    print(f"Error: Failed to write to {csv_file} after {max_retries} attempts.")
+                    print(f"Please ensure the file is not open in another program and you have write permissions.")
+                    print(f"Original error: {e}")
+                    raise
+            except Exception as e:
+                print(f"Error writing CSV file: {e}")
+                raise
     
     def get_aggregated_stats(self):
         """Get current aggregated statistics."""
