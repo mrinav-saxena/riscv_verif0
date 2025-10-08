@@ -167,8 +167,12 @@ class BranchPredictor:
         self.unique_indices = set()
         self.index_hits = 0
         self.replacements = 0
-        self.index_stats = {}  # Per-index statistics: {index: {'predicts': 0, 'mispredicts': 0, 'total': 0}}
+        self.unique_branch_addresses = set()  # Track unique branch addresses
+        self.index_stats = {}  # Per-index statistics: {index: {'predicts': 0, 'mispredicts': 0, 'total': 0, 'replacements': 0}}
         self.iteration_stats = []  # Track stats for each iteration
+        
+        # Tag tracking for replacement detection (for addr_index and lhr schemes)
+        self.index_tags = {}  # Dictionary to store tags for each index: {index: tag}
     
     def extract_addr_bits(self, pc_address):
         """Extract specific bit range from PC address."""
@@ -182,6 +186,21 @@ class BranchPredictor:
         extracted_bits = (pc_int >> low_bit) & mask
         
         return extracted_bits
+    
+    def extract_tag(self, pc_address):
+        """Extract tag from PC address (bits above the address bit range)."""
+        pc_int = int(pc_address, 16)
+        high_bit, low_bit = self.addr_bit_range
+        
+        # Extract tag as the upper bits (above the address bit range)
+        # Tag consists of bits from 31 down to (high_bit + 1)
+        tag_bits = 31 - high_bit
+        if tag_bits > 0:
+            tag = pc_int >> (high_bit + 1)
+        else:
+            tag = 0  # No tag bits available
+        
+        return tag
     
     def generate_index(self, pc_address):
         """Generate index for counter table based on prediction scheme."""
@@ -210,6 +229,19 @@ class BranchPredictor:
         # Generate index for this branch
         index = self.generate_index(pc_address)
         
+        # Check for replacements (for addr_index and lhr schemes)
+        if self.scheme in ["addr_index", "lhr"]:
+            current_tag = self.extract_tag(pc_address)
+            if index in self.index_tags:
+                existing_tag = self.index_tags[index]
+                if existing_tag != current_tag:
+                    self.replacements += 1
+                    # Track per-index replacement
+                    if index in self.index_stats:
+                        self.index_stats[index]['replacements'] += 1
+            # Update the tag for this index
+            self.index_tags[index] = current_tag
+        
         # Get current counter value
         current_counter = self.saturating_counter.get_counter(index)
         
@@ -225,6 +257,9 @@ class BranchPredictor:
         if is_predict:
             self.total_predicts += 1
         
+        # Track unique branch addresses
+        self.unique_branch_addresses.add(pc_address)
+        
         # Track unique indices
         if index not in self.unique_indices:
             self.unique_indices.add(index)
@@ -233,7 +268,7 @@ class BranchPredictor:
         
         # Track per-index statistics
         if index not in self.index_stats:
-            self.index_stats[index] = {'predicts': 0, 'mispredicts': 0, 'total': 0}
+            self.index_stats[index] = {'predicts': 0, 'mispredicts': 0, 'total': 0, 'replacements': 0}
         
         self.index_stats[index]['total'] += 1
         if is_predict:
@@ -317,6 +352,7 @@ class BranchPredictor:
                     n_unique_indices = len(self.unique_indices)
                     n_index_hits = self.index_hits
                     n_replacements = self.replacements
+                    n_unique_branch_addresses = len(self.unique_branch_addresses)
                     replacement_percentage = (n_replacements / self.total_branches * 100) if self.total_branches > 0 else 0
                     
                     # Write overall statistics
@@ -326,6 +362,7 @@ class BranchPredictor:
                     writer.writerow(["Total Predicts", self.total_predicts, f"{predict_rate:.2f}%", self.total_predicts])
                     writer.writerow(["Total Mispredicts", self.total_branches - self.total_predicts, f"{100-predict_rate:.2f}%", self.total_branches - self.total_predicts])
                     writer.writerow(["Predict Rate", f"{predict_rate:.2f}%", "", ""])
+                    writer.writerow(["Unique Branch Addresses", n_unique_branch_addresses, f"{(n_unique_branch_addresses/self.total_branches*100):.2f}%", n_unique_branch_addresses])
                     writer.writerow([])
                     
                     # Index access statistics
@@ -338,7 +375,7 @@ class BranchPredictor:
                     
                     # Per-index statistics
                     writer.writerow(["Per-Index Statistics"])
-                    writer.writerow(["Index", "Total Branches", "Predicts", "Mispredicts", "Predict Rate", "Total Branches", "Total Predicts", "Total Mispredicts"])
+                    writer.writerow(["Index", "Total Branches", "Predicts", "Mispredicts", "Predict Rate", "Replacements", "Total Branches", "Total Predicts", "Total Mispredicts", "Total Replacements"])
                     
                     # Sort indices for consistent output
                     sorted_indices = sorted(self.index_stats.keys())
@@ -351,9 +388,11 @@ class BranchPredictor:
                             stats['predicts'],
                             stats['mispredicts'],
                             f"{index_predict_rate:.2f}%",
+                            stats['replacements'],
                             stats['total'],
                             stats['predicts'],
-                            stats['mispredicts']
+                            stats['mispredicts'],
+                            stats['replacements']
                         ])
                     
                     # Iteration-by-iteration statistics
@@ -398,6 +437,7 @@ class BranchPredictor:
         predict_rate = (self.total_predicts / self.total_branches * 100) if self.total_branches > 0 else 0
         n_unique_indices = len(self.unique_indices)
         n_index_hits = self.index_hits
+        n_unique_branch_addresses = len(self.unique_branch_addresses)
         
         return {
             'total_branches': self.total_branches,
@@ -405,7 +445,8 @@ class BranchPredictor:
             'total_mispredicts': self.total_branches - self.total_predicts,
             'predict_rate': predict_rate,
             'unique_indices': n_unique_indices,
-            'index_hits': n_index_hits
+            'index_hits': n_index_hits,
+            'unique_branch_addresses': n_unique_branch_addresses
         }
 
 
@@ -418,12 +459,13 @@ def simulate_branch_prediction(branch_seq_file, scheme, counter_policy, n_cnt_bi
     print(f"Address bit range: {addr_bit_range[0]}:{addr_bit_range[1]}")
     print(f"GHR size: {ghr_size} bits")
     print(f"LHR size: {lhr_size} bits")
-    print("Press Enter to process next entry, 'x' to exit, 's' for slow mode (100ms delay)")
+    print("Press Enter to process next entry, 'x' to exit, 's' for slow mode (100ms delay), 'r' to run all iterations")
     print("-" * 60)
     
     # Initialize branch predictor
     predictor = BranchPredictor(scheme, counter_policy, n_cnt_bits, addr_bit_range, ghr_size, lhr_size)
     slow_mode = False
+    run_mode = False
     
     try:
         with open(branch_seq_file, 'r') as f:
@@ -453,11 +495,14 @@ def simulate_branch_prediction(branch_seq_file, scheme, counter_policy, n_cnt_bi
                     predict_mispredict = "PREDICT" if result['is_predict'] else "MISPREDICT"
                     print(f"processed {line} - outcome - {outcome}, prediction - {result['prediction']}, {predict_mispredict}")
                     print(f"  index: {result['index']}, counter: {result['counter_value']}, ghr: {result['ghr_value']}, lhr: {result['lhr_value']}")
-                    print(f"  [AGGREGATED] Branch: {stats['total_branches']}, Predicts: {stats['total_predicts']}, Mispredicts: {stats['total_mispredicts']}, Predict Rate: {stats['predict_rate']:.2f}%, Unique Indices: {stats['unique_indices']}, Index Hits: {stats['index_hits']}")
+                    print(f"  [AGGREGATED] Branch: {stats['total_branches']}, Predicts: {stats['total_predicts']}, Mispredicts: {stats['total_mispredicts']}, Predict Rate: {stats['predict_rate']:.2f}%, Unique Indices: {stats['unique_indices']}, Index Hits: {stats['index_hits']}, Unique Branch Addresses: {stats['unique_branch_addresses']}")
                 
                 # Interactive mode
-                if slow_mode:
-                    time.sleep(0.1)  # 100ms delay
+                if run_mode:
+                    # Run mode - no user interaction, just continue
+                    pass
+                elif slow_mode:
+                    time.sleep(0.01)  # 100ms delay
                     user_input = 'continue'
                 else:
                     user_input = input()
@@ -469,10 +514,26 @@ def simulate_branch_prediction(branch_seq_file, scheme, counter_policy, n_cnt_bi
                     print("Switching to slow mode (100ms delay per iteration)...")
                     slow_mode = True
                     time.sleep(0.1)  # 100ms delay for first slow iteration
+                elif user_input.lower() == 'r':
+                    print("Switching to run mode (processing all iterations without output)...")
+                    run_mode = True
         
         # Generate CSV report
         csv_file = predictor.generate_csv_report(output_dir, "branch_prediction", scheme, counter_policy, n_cnt_bits, addr_bit_range, ghr_size, lhr_size)
         print(f"Generated statistics report: {csv_file}")
+        
+        # Display final statistics if run mode was used
+        if run_mode:
+            final_stats = predictor.get_aggregated_stats()
+            print("\n========== FINAL STATISTICS ==========")
+            print(f"Total Branches: {final_stats['total_branches']}")
+            print(f"Total Predicts: {final_stats['total_predicts']}")
+            print(f"Total Mispredicts: {final_stats['total_mispredicts']}")
+            print(f"Predict Rate: {final_stats['predict_rate']:.2f}%")
+            print(f"Unique Indices: {final_stats['unique_indices']}")
+            print(f"Index Hits: {final_stats['index_hits']}")
+            print(f"Unique Branch Addresses: {final_stats['unique_branch_addresses']}")
+            print("=====================================\n")
         
         print("========== BRANCH PREDICTION SIMULATION COMPLETE ================\n")
         
